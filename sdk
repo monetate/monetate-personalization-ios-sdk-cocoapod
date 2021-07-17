@@ -1,0 +1,62 @@
+#!/bin/bash
+
+help() {
+  echo ''
+  echo 'SDK shortcut script'
+  echo 'Usage: ./sdk COMMAND'
+  echo ''
+  echo 'See the valid commands below:'
+  echo '    full-docs                   Generates internal and external documentation'
+  echo '    external-docs               Generates external documentation'
+  echo '    internal-docs               Generates internal documentation'
+
+  echo '    help                        Shows this menu'
+}
+
+external_docs() {
+  jazzy \
+    --objc \
+    --umbrella-header config/monetate_ios_sdk.h \
+    --framework-root . \
+    --output docs-EXTERNAL/jazzy
+}
+
+full_docs() {
+  echo ''
+  echo 'Generating external docs...'
+  echo ''
+  external_docs
+
+  echo ''
+  echo 'Generating internal docs...'
+  echo ''
+  internal_docs
+}
+
+internal_docs() {
+  jazzy \
+    --objc \
+    --umbrella-header config/internal_documentation.h \
+    --framework-root . \
+    --output docs/jazzy
+}
+
+# Main Application Code
+for i in "$@"
+do
+  case $i in
+    external-docs)
+      external_docs
+    ;;
+    full-docs)
+      full_docs
+    ;;
+    internal-docs)
+      internal_docs
+    ;;
+  esac
+done
+
+if [ $# -eq 0 ]; then
+    help
+fi
