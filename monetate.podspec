@@ -15,7 +15,7 @@ Pod::Spec.new do |s|
   #  summary should be tweet-length, and the description more in depth.
   #
 
-  s.name         = "monetate-ios-sdk"
+  s.name         = "monetate"
   s.version      = "2021.07.19"
   s.summary      = "Provides convenient access to the Engine API"
 
@@ -91,7 +91,7 @@ Join the 1,000+ brands growing their revenue with Kibo"
   #  Not including the public_header_files will make all headers public.
   #
 
-  s.source_files  = "monetate-ios-sdk/**/*"
+  s.source_files  = "monetate/**/*"
 
   # s.public_header_files = "Classes/**/*.h"
 
