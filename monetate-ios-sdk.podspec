@@ -15,7 +15,7 @@ Pod::Spec.new do |s|
   #  summary should be tweet-length, and the description more in depth.
   #
 
-  s.name         = "monetate"
+  s.name         = "monetate-ios-sdk"
   s.version      = "2021.07.19"
   s.summary      = "Provides convenient access to the Engine API"
 
