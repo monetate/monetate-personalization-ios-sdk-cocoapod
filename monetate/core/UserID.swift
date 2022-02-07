@@ -12,7 +12,19 @@ public class User :Codable {
     public var kiboId: String?
     public var deviceId: String?
     public var customerId: String?
-    
+    /**
+     Value should be passed in every call
+
+     If deviceId   has a value it should be the default id sent in all API calls
+
+     If kiboId is auto the SDK should generate a new id and replace auto with the returned ID. kiboId can also be a value set by the client. If deviceId is not defined then kiboId should be used as the default id.
+
+     We populate the value from auto into these key/value pairs so that the client can read them and save them if desired.
+
+     Either kiboId or deviceId is required in API calls. Both ids should not be passed together.
+
+     If customerId is defined it should also be passed in all calls along with one of the other ids. no auto option for customerId. This should not be changed after init except for when setCustomerId() is called
+     */
     public init(kiboId:String?=nil, deviceId: String? = nil, customerId: String? = nil) {
         self.kiboId = kiboId
         if let val = kiboId{

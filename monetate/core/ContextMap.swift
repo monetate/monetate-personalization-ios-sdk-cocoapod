@@ -32,7 +32,18 @@ public class ContextMap {
     var pageEvents:  (() -> Future<PageEvents, Error>)?
     var metadata:  (() -> Future<Metadata, Error>)?
     var customVariables:  (() -> Future<CustomVariables, Error>)?
-    
+    /**
+     
+ Maps placement of record and context variables within app/page data layer, state, or other vars
+
+ Can be mapped to a variable, function, or auto which uses a behind the scenes SDK function to populate it. We populate the value from auto into these key/value pairs so that the client can read them and save them if desired. Parameters that accept auto are listed in the “Context” table below
+
+ Editable after init
+
+ Starting points could be provided for common integrations with state and data layer providers
+
+ Needs a configurable timeout if called function hangs
+     */
     public init (
         userAgent: UserAgent? = nil,
         ipAddress: IPAddress? = nil,

@@ -37,7 +37,7 @@ func deviceName() -> String {
 //eg. MyApp/1
 func appNameAndVersion() -> String {
     let dictionary = Bundle.main.infoDictionary!
-    let version = dictionary["CFBundleShortVersionString"] as! String
+    let version = dictionary["CFBundleShortVersionString"] as? String ?? "1"
     let name = dictionary["CFBundleName"] as! String
     return "\(name)/\(version)"
 }

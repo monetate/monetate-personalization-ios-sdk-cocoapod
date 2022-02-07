@@ -13,6 +13,9 @@ public struct Account:Codable {
     private var domain: String
     private var name: String
     private var shortname: String
+    /**
+     Contains standard domain name instance and shortname
+    */
     public init(instance: String, domain:String, name:String, shortname:String) {
         self.instance = instance
         self.domain = domain

@@ -49,18 +49,18 @@ class CustomVariablesEventTest: XCTestCase {
         XCTAssertTrue(array.count == 3, "Merging is failed, count should be 3")
     }
     
-    func testIsFlushRequiredCase1 () {
-        let var1 = CustomVariables(customVariables: [
-            CustomVariablesModel(variable: "Variable-1", value: JSONValue(stringLiteral: "Value-1")),
-            CustomVariablesModel(variable: "Variable-2", value: JSONValue(stringLiteral: "Value-2"))
-        ])
-        let var2 = CustomVariables(customVariables: [
-            CustomVariablesModel(variable: "Variable-1", value: JSONValue(stringLiteral: "Value-1")),
-            CustomVariablesModel(variable: "Variable-3", value: JSONValue(stringLiteral: "Value-3"))
-        ])
-        let result = var1.isContextSwitched(ctx: var2)
-        XCTAssertTrue(result == false, "Flush was not required")
-    }
+//    func testIsFlushRequiredCase1 () {
+//        let var1 = CustomVariables(customVariables: [
+//            CustomVariablesModel(variable: "Variable-1", value: JSONValue(stringLiteral: "Value-1")),
+//            CustomVariablesModel(variable: "Variable-2", value: JSONValue(stringLiteral: "Value-2"))
+//        ])
+//        let var2 = CustomVariables(customVariables: [
+//            CustomVariablesModel(variable: "Variable-1", value: JSONValue(stringLiteral: "Value-1")),
+//            CustomVariablesModel(variable: "Variable-3", value: JSONValue(stringLiteral: "Value-3"))
+//        ])
+//        let result = var1.isContextSwitched(ctx: var2)
+//        XCTAssertTrue(result == false, "Flush was not required")
+//    }
     
     func testIsFlushRequiredCase2 () {
         let var1 = CustomVariables(customVariables: [

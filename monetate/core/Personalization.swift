@@ -20,6 +20,11 @@ public class Personalization {
     }
     
     //setup method
+    /**
+     Creates the object that is used for all SDK activities
+
+     Init with accountId, userId, contextMap where contextMap is optional parameter.
+    */
     public static func setup(account: Account, user: User, contextMap: ContextMap) {
         Personalization._shared = Personalization(account: account, user: user, contextMap: contextMap)
     }
@@ -44,7 +49,7 @@ public class Personalization {
     private var queue: [ContextEnum: MEvent] = [:]
     private var errorQueue: [MError] = []
     
-    public var timer = ScheduleTimer(timeInterval: 20, callback: {
+    public var timer = ScheduleTimer(timeInterval: 7, callback: {
         _ = Personalization.shared.callMonetateAPI()
     })
     
@@ -92,7 +97,9 @@ public class Personalization {
         })
         return promise.future
     }
-    
+    /**
+     Used to manually send all queued reporting data immediately, instead of waiting for the next automatic send. That means make api call with existing data from queue and clear it.
+     */
     public func flush () {
         _=callMonetateAPI()
     }
@@ -117,7 +124,13 @@ public class Personalization {
         }
         
     }
-    
+    /**
+     Used to add events to the queue, which will be sent with the next flush() call or as part of an automatic timed send. Important as the contextMap could change before the next report or getActions call, this preserves the values when queued.
+
+     context is name of event for example monetate:record:Impressions.
+
+     eventData is data associated with event and it is optional parameter. If event data is not passed we should look into contextMap object defined while creating kibo instance.
+     */
     public func report (context:ContextEnum, event: MEvent?) {
         guard let event = event else {
             self.timer.resume()
@@ -178,7 +191,25 @@ public class Personalization {
             })
         }
     }
-    
+    /**
+     Used to record events and also request decision(s).
+
+     requestId the request identifier tying the response back to an event
+
+     context ? is name of event for example monetate:record:Impressions.
+
+     eventData ? is data associated with event.
+
+     context and eventData are optional fields.
+
+     Returns an object containing the JSON from appropriate action(s), using the types in the action table below. Those objects are reformatted into a consistent returned json with a required actionType and action.
+
+     The combination of both explicitly defined context and  contextMap data should be gathered and included based on the needs of the given event(s)
+
+     Also sends any queue data.
+
+     status is the value returned from {meta: {code: ###}}. Anything other than 200 does not include actions in the return.
+     */
     public func getActions (context:ContextEnum, requestId: String, event: MEvent?) -> Future<APIResponse, Error> {
         
         let promise = Promise <APIResponse, Error>()
