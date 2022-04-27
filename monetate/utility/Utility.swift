@@ -15,6 +15,10 @@ class Utility {
         var queue = mqueue
         let promise = Promise<[ContextEnum: MEvent], Error>()
         switch context {
+        case .PageEvents:
+            queue[.PageEvents] = data
+         promise.succeed(value: queue)
+        break
         case .Referrer:
             queue[.Referrer] = data
             promise.succeed(value: queue)
@@ -153,6 +157,10 @@ class Utility {
     public static func createEventBody (queue: [ContextEnum: MEvent]) -> [[String:Any]?]  {
         var json:[[String:Any]?] = []
            for (key,val) in queue {
+            if key == .PageEvents, let val = val as? PageEvents {
+                let data = try! JSONEncoder().encode(val)
+                json.append(data.toJSON())
+            }
             if key == .Referrer, let val = val as? Referrer {
                 let data = try! JSONEncoder().encode(val)
                 json.append(data.toJSON())
