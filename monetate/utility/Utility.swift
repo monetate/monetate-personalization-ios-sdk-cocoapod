@@ -11,7 +11,7 @@ import Foundation
 
 class Utility {
     
-    public static func processEvent (context:ContextEnum, data: MEvent, mqueue: [ContextEnum: MEvent], contextMap: ContextMap) -> Future<[ContextEnum: MEvent], Error> {
+     static func processEvent (context:ContextEnum, data: MEvent, mqueue: [ContextEnum: MEvent], contextMap: ContextMap) -> Future<[ContextEnum: MEvent], Error> {
         var queue = mqueue
         let promise = Promise<[ContextEnum: MEvent], Error>()
         switch context {
@@ -150,7 +150,7 @@ class Utility {
         return promise.future
     }
     
-    public static func createEventBody (queue: [ContextEnum: MEvent]) -> [[String:Any]?]  {
+     static func createEventBody (queue: [ContextEnum: MEvent]) -> [[String:Any]?]  {
         var json:[[String:Any]?] = []
            for (key,val) in queue {
             if key == .Referrer, let val = val as? Referrer {
