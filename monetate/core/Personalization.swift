@@ -255,7 +255,7 @@ public class Personalization {
         return promise.future
     }
     
-    public func toString () -> Future<String, Error> {
+     func toString () -> Future<String, Error> {
         let promise = Promise<String, Error>()
         
         let acount = try! JSONEncoder().encode(Personalization.shared.account)
@@ -271,7 +271,7 @@ public class Personalization {
     
     var API_URL = "https://api.monetate.net/api/engine/v1/decide/"
     
-    public func callMonetateAPI (data: Data? = nil, requestId: String?=nil) -> Future<APIResponse,Error> {
+     func callMonetateAPI (data: Data? = nil, requestId: String?=nil) -> Future<APIResponse,Error> {
         let promise = Promise<APIResponse,Error>()
         
         var body:[String:Any] = [

@@ -22,10 +22,10 @@ public struct Account:Codable {
         self.name = name
         self.shortname = shortname
     }
-    public func getChannel () -> String {
+     func getChannel () -> String {
         return "\(name)/\(instance)/\(domain)"
     }
-    public func getShortName () -> String {
+     func getShortName () -> String {
         return self.shortname
     }
 }
