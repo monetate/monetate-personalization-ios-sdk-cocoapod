@@ -15,6 +15,11 @@ class Utility {
         var queue = mqueue
         let promise = Promise<[ContextEnum: MEvent], Error>()
         switch context {
+        case .Impressions:
+         queue[.Impressions] = data
+         promise.succeed(value: queue)
+        break
+        
         case .PageEvents:
             queue[.PageEvents] = data
          promise.succeed(value: queue)
@@ -157,6 +162,10 @@ class Utility {
      static func createEventBody (queue: [ContextEnum: MEvent]) -> [[String:Any]?]  {
         var json:[[String:Any]?] = []
            for (key,val) in queue {
+            if key == .Impressions, let val = val as? Impressions {
+                let data = try! JSONEncoder().encode(val)
+                json.append(data.toJSON())
+            }
             if key == .PageEvents, let val = val as? PageEvents {
                 let data = try! JSONEncoder().encode(val)
                 json.append(data.toJSON())
