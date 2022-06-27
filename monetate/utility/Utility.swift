@@ -19,7 +19,10 @@ class Utility {
          queue[.Impressions] = data
          promise.succeed(value: queue)
         break
-        
+        case .ClosedSession:
+            queue[.ClosedSession] = data
+         promise.succeed(value: queue)
+        break
         case .PageEvents:
             queue[.PageEvents] = data
          promise.succeed(value: queue)
@@ -163,6 +166,10 @@ class Utility {
         var json:[[String:Any]?] = []
            for (key,val) in queue {
             if key == .Impressions, let val = val as? Impressions {
+                let data = try! JSONEncoder().encode(val)
+                json.append(data.toJSON())
+            }
+            if key == .ClosedSession, let val = val as? ClosedSession {
                 let data = try! JSONEncoder().encode(val)
                 json.append(data.toJSON())
             }
