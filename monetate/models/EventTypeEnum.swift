@@ -33,4 +33,6 @@ public enum ContextEnum: String, MEvent {
     case CustomVariables = "monetate:context:CustomVariables"
     case ClosedSession = "monetate:context:ClosedSession"
     case DecisionRequest = "monetate:decision:DecisionRequest"
+    case RecClicks = "monetate:record:RecClicks"
+    case RecImpressions = "monetate:record:RecImpressions"
 }
