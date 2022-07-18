@@ -72,6 +72,8 @@
 		228CF1822125CEE100D3E188 /* Monetate.plist in Resources */ = {isa = PBXBuildFile; fileRef = 228CF1812125CEE100D3E188 /* Monetate.plist */; };
 		22E0FACD210B68D3002E6B93 /* Monetate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 22E0FAC3210B68D3002E6B93 /* Monetate.framework */; };
 		22E0FAD4210B68D3002E6B93 /* monetate_ios_sdk.h in Headers */ = {isa = PBXBuildFile; fileRef = 22E0FAC6210B68D3002E6B93 /* monetate_ios_sdk.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		DFBB54B12872E6EB0005DBDF /* RecClicks.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFBB54B02872E6EB0005DBDF /* RecClicks.swift */; };
+		DFBB54B32872E6FF0005DBDF /* RecImpressions.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFBB54B22872E6FF0005DBDF /* RecImpressions.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -157,6 +159,8 @@
 		22E0FAC7210B68D3002E6B93 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		22E0FACC210B68D3002E6B93 /* monetate-ios-sdkTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "monetate-ios-sdkTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		22E0FAD3210B68D3002E6B93 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		DFBB54B02872E6EB0005DBDF /* RecClicks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecClicks.swift; sourceTree = "<group>"; };
+		DFBB54B22872E6FF0005DBDF /* RecImpressions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecImpressions.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -221,6 +225,8 @@
 				1F157C5726B02FCC000D952B /* Language.swift */,
 				1F157C5826B02FCC000D952B /* ClosedSession.swift */,
 				1F157C5926B02FCC000D952B /* Impressions.swift */,
+				DFBB54B02872E6EB0005DBDF /* RecClicks.swift */,
+				DFBB54B22872E6FF0005DBDF /* RecImpressions.swift */,
 				1F157C5A26B02FCC000D952B /* PageEvent.swift */,
 				1F157C5B26B02FCC000D952B /* ProductView.swift */,
 				1F157C5C26B02FCC000D952B /* DecisionRequest.swift */,
@@ -495,6 +501,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DFBB54B12872E6EB0005DBDF /* RecClicks.swift in Sources */,
 				1F157C8926B02FCC000D952B /* ClosedSession.swift in Sources */,
 				1F157C9C26B02FCC000D952B /* Action.swift in Sources */,
 				1F157CA626B02FCC000D952B /* MLocation.swift in Sources */,
@@ -533,6 +540,7 @@
 				1F157C8326B02FCC000D952B /* Account.swift in Sources */,
 				1F157C9726B02FCC000D952B /* UserAgent.swift in Sources */,
 				1F157CA726B02FCC000D952B /* IPAddressUtil.swift in Sources */,
+				DFBB54B32872E6FF0005DBDF /* RecImpressions.swift in Sources */,
 				1F157C9B26B02FCC000D952B /* PageView.swift in Sources */,
 				1F157C8726B02FCC000D952B /* JSONValue.swift in Sources */,
 				1F157C9A26B02FCC000D952B /* EndcapImpressions.swift in Sources */,
