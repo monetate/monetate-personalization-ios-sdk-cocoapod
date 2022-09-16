@@ -20,8 +20,8 @@ public enum ContextEnum: String, MEvent {
     case Language = "monetate:context:Language"
     
     //events that can be passed as part of a report or getActions call. 
-    case Impressions = "monetate:context:Impressions"
-    case PageEvents = "monetate:context:PageEvents"
+    case Impressions = "monetate:record:Impressions"
+    case PageEvents = "monetate:record:PageEvents"
     case PageView = "monetate:context:PageView"
     case EndcapClicks = "monetate:context:EndcapClicks"
     case EndcapImpressions = "monetate:context:EndcapImpressions"
