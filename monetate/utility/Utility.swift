@@ -173,6 +173,10 @@ class Utility {
      static func createEventBody (queue: [ContextEnum: MEvent]) -> [[String:Any]?]  {
         var json:[[String:Any]?] = []
            for (key,val) in queue {
+               if key == .PageView, let val = val as? PageView {
+                   let data = try! JSONEncoder().encode(val)
+                   json.append(data.toJSON())
+               }
             if key == .RecClicks, let val = val as? RecClicks {
                 let data = try! JSONEncoder().encode(val)
                 json.append(data.toJSON())
