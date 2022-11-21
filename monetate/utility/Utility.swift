@@ -59,24 +59,24 @@ class Utility {
             queue[.PageView] = data
             promise.succeed(value: queue)
             break
-        case .PageEvents:
-            if let event = queue[.PageEvents] as? PageEvents, let data = data as? PageEvents {
-                event.pageEvents = event.pageEvents.union(data.pageEvents)
-            } else {
-                queue[.PageEvents] = data
-            }
-            if let cart = contextMap.pageEvents {
-                cart().on { (data) in
-                    if let event = queue[.PageEvents] as? PageEvents {
-                        event.pageEvents = event.pageEvents.union(data.pageEvents)
-                    }
-                    promise.succeed(value: queue)
-                }
-            } else {
-                promise.succeed(value: queue)
-            }
-            
-            break
+//        case .PageEvents:
+//            if let event = queue[.PageEvents] as? PageEvents, let data = data as? PageEvents {
+//                event.pageEvents = event.pageEvents.union(data.pageEvents)
+//            } else {
+//                queue[.PageEvents] = data
+//            }
+//            if let cart = contextMap.pageEvents {
+//                cart().on { (data) in
+//                    if let event = queue[.PageEvents] as? PageEvents {
+//                        event.pageEvents = event.pageEvents.union(data.pageEvents)
+//                    }
+//                    promise.succeed(value: queue)
+//                }
+//            } else {
+//                promise.succeed(value: queue)
+//            }
+//
+//            break
         case .ProductDetailView:
             if let event = queue[.ProductDetailView] as? ProductDetailView, let prod1 = event.products ,let data = data as? ProductDetailView, let prod2 = data.products  {
                 event.products = ProductDetailView.merge(first: prod1, second: prod2)
