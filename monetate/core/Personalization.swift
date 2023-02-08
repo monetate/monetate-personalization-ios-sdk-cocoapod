@@ -192,7 +192,7 @@ public class Personalization {
         }
     }
     /**
-     Used to record events and also request decision(s).
+     Used to record event and also request decision(s).
 
      requestId the request identifier tying the response back to an event
 
@@ -223,16 +223,81 @@ public class Personalization {
         return promise.future
     }
     
+    /**
+     Used to record multiple events and also request decisions.
+
+     requestId the request identifier tying the response back to an event
+
+     context ? is name of event for example monetate:record:Impressions.
+
+     eventData ? is data associated with event.
+
+     Returns an object containing the JSON from appropriate action(s), using the types in the action table below. Those objects are reformatted into a consistent returned json with a required actionType and action.
+
+     The combination of both explicitly defined context and  contextMap data should be gathered and included based on the needs of the given event(s)
+
+     status is the value returned from {meta: {code: ###}}. Anything other than 200 does not include actions in the return.
+     */
+    public func getActions (requestId: String, eventsArray:[ContextEnum: MEvent]) -> Future<APIResponse, Error> {
+        
+        let promise = Promise <APIResponse, Error>()
+        for object in eventsArray {
+            let context = object.key
+            let event = object.value
+            Utility.processEvent(context: context, data: event, mqueue: self.queue, contextMap: self.contextMap).on(success: { (queue) in
+                self.queue = queue
+            })
+        }
+        processDecision(requestId, promise)
+        return promise.future
+    }
+    
+    /**
+     Used to add events in queue.
+
+     context ? is name of event for example monetate:record:Impressions.
+
+     eventData ? is data associated with event.
+
+     context and eventData are optional fields.
+
+     */
+    public func addEvent(context:ContextEnum, event: MEvent?) {
+        if let event = event {
+            Utility.processEvent(context: context, data: event, mqueue: self.queue, contextMap: self.contextMap).on(success: { (queue) in
+                self.queue = queue
+            })
+        }
+    }
+    
+    /**
+     Used request decisions with multiple contexts.
+
+     requestId the request identifier tying the response back to an event
+
+     Returns an object containing the JSON from appropriate action(s), using the types in the action table below. Those objects are reformatted into a consistent returned json with a required actionType and action.
+
+     The combination of both explicitly defined context and  contextMap data should be gathered and included based on the needs of the given event(s)
+
+     Also sends any queue data.
+
+     status is the value returned from {meta: {code: ###}}. Anything other than 200 does not include actions in the return.
+
+     */
+    public func getActionsData(requestId: String) -> Future<APIResponse, Error>  {
+        let promise = Promise <APIResponse, Error>()
+        processDecision(requestId, promise)
+        return promise.future
+    }
+    
     fileprivate func processDecision(_ requestId: String, _ promise: Promise<APIResponse, Error>) {
         //adding decision request event
         self.queue[.DecisionRequest] = DecisionRequest(requestId: requestId)
         self.callMonetateAPI(requestId: requestId).on(success: { (res) in
-            
             Log.debug("processDecision - API success")
             promise.succeed(value: res)
         },failure: { (er) in
             Log.error("processDecision - API failure")
-            
             promise.fail(error: er)
         })
     }
