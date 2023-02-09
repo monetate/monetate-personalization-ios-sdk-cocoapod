@@ -11,72 +11,30 @@ import Foundation
 
 class Utility {
     
-     static func processEvent (context:ContextEnum, data: MEvent, mqueue: [ContextEnum: MEvent], contextMap: ContextMap) -> Future<[ContextEnum: MEvent], Error> {
+    static func processEvent (context:ContextEnum, data: MEvent, mqueue: [ContextEnum: MEvent], contextMap: ContextMap) -> Future<[ContextEnum: MEvent], Error> {
         var queue = mqueue
         let promise = Promise<[ContextEnum: MEvent], Error>()
         switch context {
         case .RecClicks:
-         queue[.RecClicks] = data
-         promise.succeed(value: queue)
-        break
+            queue[.RecClicks] = data
+            promise.succeed(value: queue)
+            break
         case .RecImpressions:
-         queue[.RecImpressions] = data
-         promise.succeed(value: queue)
-        break
+            queue[.RecImpressions] = data
+            promise.succeed(value: queue)
+            break
         case .Impressions:
-         queue[.Impressions] = data
-         promise.succeed(value: queue)
-        break
+            queue[.Impressions] = data
+            promise.succeed(value: queue)
+            break
         case .ClosedSession:
             queue[.ClosedSession] = data
-         promise.succeed(value: queue)
-        break
+            promise.succeed(value: queue)
+            break
         case .PageEvents:
             queue[.PageEvents] = data
-         promise.succeed(value: queue)
-        break
-        case .Referrer:
-            queue[.Referrer] = data
             promise.succeed(value: queue)
             break
-        case .UserAgent:
-            queue[.UserAgent] = data
-            promise.succeed(value: queue)
-            break
-        case .IpAddress:
-            queue[.IpAddress] = data
-            promise.succeed(value: queue)
-            break
-        case .Coordinates:
-            queue[.Coordinates] = data
-            promise.succeed(value: queue)
-            break
-        case .ScreenSize:
-            queue[.ScreenSize] = data
-            promise.succeed(value: queue)
-            break
-        case .PageView:
-            queue[.PageView] = data
-            promise.succeed(value: queue)
-            break
-//        case .PageEvents:
-//            if let event = queue[.PageEvents] as? PageEvents, let data = data as? PageEvents {
-//                event.pageEvents = event.pageEvents.union(data.pageEvents)
-//            } else {
-//                queue[.PageEvents] = data
-//            }
-//            if let cart = contextMap.pageEvents {
-//                cart().on { (data) in
-//                    if let event = queue[.PageEvents] as? PageEvents {
-//                        event.pageEvents = event.pageEvents.union(data.pageEvents)
-//                    }
-//                    promise.succeed(value: queue)
-//                }
-//            } else {
-//                promise.succeed(value: queue)
-//            }
-//
-//            break
         case .ProductDetailView:
             if let event = queue[.ProductDetailView] as? ProductDetailView, let prod1 = event.products ,let data = data as? ProductDetailView, let prod2 = data.products  {
                 event.products = ProductDetailView.merge(first: prod1, second: prod2)
@@ -145,7 +103,6 @@ class Utility {
                 promise.succeed(value: queue)
             }
             break
-            
         case .Metadata:
             if let event = queue[.Metadata] as? Metadata, let data = data as? Metadata {
                 event.metadata = Metadata.merge(first: event.metadata, second: data.metadata)
@@ -164,19 +121,23 @@ class Utility {
             break
             
         default:
-          
-            Log.debug("No match found")
+            queue[context] = data
+            promise.succeed(value: queue)
         }
         return promise.future
     }
     
-     static func createEventBody (queue: [ContextEnum: MEvent]) -> [[String:Any]?]  {
+    static func createEventBody (queue: [ContextEnum: MEvent]) -> [[String:Any]?]  {
         var json:[[String:Any]?] = []
-           for (key,val) in queue {
-               if key == .PageView, let val = val as? PageView {
-                   let data = try! JSONEncoder().encode(val)
-                   json.append(data.toJSON())
-               }
+        for (key,val) in queue {
+            if key == .PageView, let val = val as? PageView {
+                let data = try! JSONEncoder().encode(val)
+                json.append(data.toJSON())
+            }
+            if key == .Language, let val = val as? Language {
+                let data = try! JSONEncoder().encode(val)
+                json.append(data.toJSON())
+            }
             if key == .RecClicks, let val = val as? RecClicks {
                 let data = try! JSONEncoder().encode(val)
                 json.append(data.toJSON())
