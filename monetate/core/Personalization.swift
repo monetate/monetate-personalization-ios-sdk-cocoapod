@@ -238,13 +238,11 @@ public class Personalization {
 
      status is the value returned from {meta: {code: ###}}. Anything other than 200 does not include actions in the return.
      */
-    public func getActions (requestId: String, eventsArray:[ContextEnum: MEvent]) -> Future<APIResponse, Error> {
+    public func getActions (requestId: String, eventsDict:[ContextEnum: MEvent]) -> Future<APIResponse, Error> {
         
         let promise = Promise <APIResponse, Error>()
-        for object in eventsArray {
-            let context = object.key
-            let event = object.value
-            Utility.processEvent(context: context, data: event, mqueue: self.queue, contextMap: self.contextMap).on(success: { (queue) in
+        for object in eventsDict {
+            Utility.processEvent(context: object.key, data: object.value, mqueue: self.queue, contextMap: self.contextMap).on(success: { (queue) in
                 self.queue = queue
             })
         }
