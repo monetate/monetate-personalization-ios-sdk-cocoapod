@@ -130,6 +130,10 @@ class Utility {
     static func createEventBody (queue: [ContextEnum: MEvent]) -> [[String:Any]?]  {
         var json:[[String:Any]?] = []
         for (key,val) in queue {
+            if key == .CustomVariables, let val = val as? CustomVariables {
+                let data = try! JSONEncoder().encode(val)
+                json.append(data.toJSON())
+            }
             if key == .PageView, let val = val as? PageView {
                 let data = try! JSONEncoder().encode(val)
                 json.append(data.toJSON())
