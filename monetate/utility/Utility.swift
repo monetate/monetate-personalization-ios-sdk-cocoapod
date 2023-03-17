@@ -86,6 +86,23 @@ class Utility {
                 promise.succeed(value: queue)
             }
             break
+        case .AddToCart:
+            if let key = queue[.AddToCart] as? AddToCart, let lines1 = key.cartLines, let data = data as? AddToCart, let lines2 = data.cartLines {
+                key.cartLines = AddToCart.merge(first: lines1, second: lines2)
+            } else {
+                queue[.AddToCart] = data
+            }
+            if let addToCart = contextMap.addToCart {
+                addToCart().on { (data) in
+                    if let event = queue[.AddToCart] as? AddToCart, let lines1 = event.cartLines, let lines2 = data.cartLines {
+                        event.cartLines = AddToCart.merge(first: lines1, second: lines2)
+                    }
+                    promise.succeed(value: queue)
+                }
+            } else {
+                promise.succeed(value: queue)
+            }
+            break
         case .Purchase:
             if let event = queue[.Purchase] as? Purchase, let lines1 = event.purchaseLines, let data = data as? Purchase, let lines2 = data.purchaseLines  {
                 event.purchaseLines = Purchase.merge(first: lines1, second: lines2)
@@ -183,6 +200,10 @@ class Utility {
                 json.append(data.toJSON())
             }
             if key == .Cart, let val = val as? Cart {
+                let data = try! JSONEncoder().encode(val)
+                json.append(data.toJSON())
+            }
+            if key == .AddToCart, let val = val as? AddToCart {
                 let data = try! JSONEncoder().encode(val)
                 json.append(data.toJSON())
             }

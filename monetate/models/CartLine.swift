@@ -28,6 +28,20 @@ public class Cart: Codable, MEvent {
     
 }
 
+/** Represents an item to be added into cart.  */
+public class AddToCart: Codable, MEvent {
+    public let eventType: String
+    public var cartLines: [CartLine]?
+    public init(cartLines: [CartLine]?) {
+        eventType = "monetate:context:AddToCart"
+        self.cartLines = cartLines
+    }
+    static func merge (first: [CartLine], second: [CartLine]) -> [CartLine] {
+        let merged = Array(Dictionary([first, second].joined().map { ($0.pid, $0)}, uniquingKeysWith: { $1 }).values)
+        return merged
+    }
+}
+
 public struct CartLine: Codable {
     
     

@@ -25,6 +25,7 @@ public class ContextMap {
     
     //non trackables
     var cart:  (() -> Future<Cart, Error>)?
+    var addToCart:  (() -> Future<AddToCart, Error>)?
     var purchase:  (() -> Future<Purchase, Error>)?
     var productDetailView: (() -> Future<ProductDetailView, Error>)?
     var productThumbnailView: (() -> Future<ProductThumbnailView, Error>)?
@@ -51,6 +52,7 @@ public class ContextMap {
         screenSize: ScreenSize? = nil,
         
         cart: (() -> Future<Cart, Error>)? = nil,
+        addToCart:  (() -> Future<AddToCart, Error>)? = nil,
         purchase: (() -> Future<Purchase, Error>)? = nil,
         productDetailView: (() -> Future<ProductDetailView, Error>)? = nil,
         productThumbnailView: (() -> Future<ProductThumbnailView, Error>)? = nil,
@@ -69,6 +71,7 @@ public class ContextMap {
         
         //non auto trackables
         self.cart = cart
+        self.addToCart = addToCart
         self.productDetailView = productDetailView
         self.productThumbnailView = productThumbnailView
         self.pageView = pageView
@@ -84,6 +87,7 @@ public class ContextMap {
         
         let zip1  = Future.zip(
             cart!(),
+            addToCart!(),
             pageView!()
         )
         
@@ -100,9 +104,10 @@ public class ContextMap {
             zip1,
             zip2
         ).on(success: { (arg) in
-            let ((cart, pageView), (productDetailView, productThumbnailView, metadata, customVariables, purchase)) = arg
+            let ((cart, addToCart, pageView), (productDetailView, productThumbnailView, metadata, customVariables, purchase)) = arg
             
             let cart_str = try! JSONEncoder().encode(cart)
+            let addToCart_str = try! JSONEncoder().encode(addToCart)
             let productDetailView_str = try! JSONEncoder().encode(productDetailView)
             let productThumbnailView_str = try! JSONEncoder().encode(productThumbnailView)
             let purchase_str = try! JSONEncoder().encode(purchase)
@@ -110,7 +115,7 @@ public class ContextMap {
             let metadata_str = try! JSONEncoder().encode(metadata)
             let customVariables_str = try! JSONEncoder().encode(customVariables)
             
-            var array = [cart_str, productDetailView_str,
+            var array = [cart_str, addToCart_str, productDetailView_str,
                          productThumbnailView_str,
                          purchase_str, pageView_str,
                          metadata_str,
