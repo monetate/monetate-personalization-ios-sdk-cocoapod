@@ -49,7 +49,7 @@ public class Personalization {
     private var queue: [ContextEnum: MEvent] = [:]
     private var errorQueue: [MError] = []
     
-    public var timer = ScheduleTimer(timeInterval: 7, callback: {
+    public var timer = ScheduleTimer(timeInterval: 0.7, callback: {
         _ = Personalization.shared.callMonetateAPI()
     })
     

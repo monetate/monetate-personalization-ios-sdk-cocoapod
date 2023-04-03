@@ -16,10 +16,10 @@ public struct RecImpressions: Codable, MEvent {
     public let eventType: String
     
     /** An Array of rec tokens to be recorded.*/
-    public var arrRecimpressions: [String]
+    public var recImpressions: [String]
     
-    public init(arrRecimpressions: [String]) {
+    public init(recImpressions: [String]) {
         eventType = "monetate:record:RecImpressions"
-        self.arrRecimpressions = arrRecimpressions
+        self.recImpressions = recImpressions
     }
 }
