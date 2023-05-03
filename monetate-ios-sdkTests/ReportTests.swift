@@ -134,7 +134,7 @@ class PersonalizationTests: XCTestCase {
 //        Personalization.setup(
 //            account: Account(instance: "instanceID", domain: "com.test.domain", name: "FlipKart", shortname: "flip"),
 //
-//            user: User(kiboId: "com.test.id.app"),
+//            user: User(monetateId: "com.test.id.app"),
 //            contextMap: setupContextMap()
 //        )
 //    }
@@ -204,7 +204,7 @@ class PersonalizationTests: XCTestCase {
     private func setupPersonalizationSDK () {
         Personalization.setup(
            account: Account(instance: "p", domain: "localhost.org", name: "a-701b337c", shortname: "localhost"),
-           user: User(kiboId: "auto"),
+           user: User(monetateId: "auto"),
            contextMap: setupContextMap()
         )
 

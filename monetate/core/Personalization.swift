@@ -129,7 +129,7 @@ public class Personalization {
 
      context is name of event for example monetate:record:Impressions.
 
-     eventData is data associated with event and it is optional parameter. If event data is not passed we should look into contextMap object defined while creating kibo instance.
+     eventData is data associated with event and it is optional parameter. If event data is not passed we should look into contextMap object defined while creating monetate instance.
      */
     public func report (context:ContextEnum, event: MEvent?) {
         guard let event = event else {
@@ -340,7 +340,7 @@ public class Personalization {
         var body:[String:Any] = [
             "channel":account.getChannel(),
             "events": Utility.createEventBody(queue: self.queue)]
-        if let val = self.user.kiboId { body["monetateId"] = val }
+        if let val = self.user.monetateId { body["monetateId"] = val }
         if let val = self.user.deviceId { body["deviceId"] = val }
         if let val = self.user.customerId { body["customerId"] = val }
         Log.debug("success - \(body.toString!)")
