@@ -11,7 +11,7 @@ import CoreLocation
 
 class MLocation : NSObject {
 
-    var kiboLM = CLLocationManager()
+    var monetateLM = CLLocationManager()
     func getLocationSerStatus()-> String {
         if CLLocationManager.locationServicesEnabled() {
             switch CLLocationManager.authorizationStatus() {
@@ -34,7 +34,7 @@ class MLocation : NSObject {
         if getLocationSerStatus().contains("AuthorizedAlways")
             || getLocationSerStatus().contains("AuthorizedWhenInUse")
         {
-            kiboLM.delegate = self
+            monetateLM.delegate = self
             
         }
     }

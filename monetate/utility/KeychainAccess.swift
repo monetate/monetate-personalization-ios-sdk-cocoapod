@@ -9,7 +9,7 @@
 import Foundation
 
 
-public func getKiboId() -> String {
+public func getMonetateId() -> String {
     
     // create a keychain helper instance
     let keychain = KeychainAccess()

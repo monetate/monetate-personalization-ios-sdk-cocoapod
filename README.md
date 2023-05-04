@@ -19,7 +19,7 @@ import  "monetate-ios-sdk"
 Initialize 
    Personalization.setup(
       account: Account(instance: "p", domain: "localhost.org", name: "a-701b337c", shortname: "localhost"),
-      user: User(kiboId: "auto"),
+      user: User(monetateId: "auto"),
       contextMap: setupContextMap()
    )
 

@@ -16,7 +16,7 @@ Pod::Spec.new do |s|
   #
 
   s.name         = "monetate-ios-sdk"
-  s.version      = "2023.04.03"
+  s.version      = "2023.05.03"
   s.summary      = "Provides convenient access to the Engine API"
 
   # This description is used to generate tags and improve search results.
@@ -24,9 +24,9 @@ Pod::Spec.new do |s|
   #   * Try to keep it short, snappy and to the point.
   #   * Write the description between the DESC delimiters below.
   #   * Finally, don't worry about the indent, CocoaPods strips it!
-  s.description  = "Kibo Personalization, powered by Monetate and Certona, is the leading personalization software, recognized by key industry analysts.
+  s.description  = "Monetate Personalization, powered by Monetate and Certona, is the leading personalization software, recognized by key industry analysts.
 From sophisticated A/B testing to AI-driven personalization, harness patented technology to delight your customers with impactful individualized experiences, resulting in increased engagement, conversions, and lifetime value.
-Join the 1,000+ brands growing their revenue with Kibo"
+Join the 1,000+ brands growing their revenue with Monetate"
 
   s.homepage     = "https://www.monetate.com"
   # s.screenshots  = "www.example.com/screenshots_1.gif", "www.example.com/screenshots_2.gif"
@@ -80,7 +80,7 @@ Join the 1,000+ brands growing their revenue with Kibo"
   #  Supports git, hg, bzr, svn and HTTP.
   #
 
-  s.source       = { :git => "https://github.com/monetate/kibo-ios-sdk-cocoapod.git", :tag => "2023.04.03" }
+  s.source       = { :git => "https://github.com/monetate/kibo-ios-sdk-cocoapod.git", :tag => "2023.05.03" }
 
 
   # ――― Source Code ―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――― #
