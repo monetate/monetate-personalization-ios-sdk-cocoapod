@@ -8,11 +8,20 @@
 
 import Foundation
 
+public enum ActionTypeEnum: String, Codable {
+    case OmniChannelJson = "monetate:action:OmnichannelJson"
+    case OmniChannelRecommendation = "monetate:action:OmnichannelRecommendation"
+    case OmniSocialProofData = "monetate:action:SocialProofDataV2"
+}
+
 public class DecisionRequest: MEvent, Codable {
     let requestId:String
     public let eventType: String
-    init (requestId:String) {
+    var actionTypes:[ActionTypeEnum]?
+    
+    init (requestId:String, actionTypes:[ActionTypeEnum]) {
         self.requestId = requestId
         self.eventType = "monetate:decision:DecisionRequest"
+        self.actionTypes = actionTypes
     }
 }

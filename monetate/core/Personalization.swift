@@ -154,13 +154,13 @@ public class Personalization {
         })
     }
     
-    fileprivate func processEvents(_ context: ContextEnum, _ event: MEvent, _ requestId: String, _ promise: Promise<APIResponse, Error>) {
+    fileprivate func processEvents(_ context: ContextEnum, _ event: MEvent, _ requestId: String, _ arrActionTypes:[ActionTypeEnum], _ promise: Promise<APIResponse, Error>) {
         if isContextSwitched(ctx: context, event: event) {
             self.callMonetateAPIOnContextSwitchedForGetActions().on(success: { (res1) in
                 Utility.processEvent(context: context, data: event, mqueue: self.queue, contextMap: self.contextMap).on(success: { (mqueue) in
                     self.queue = mqueue
                     //adding decision request event
-                    self.queue[.DecisionRequest] = DecisionRequest(requestId: requestId)
+                    self.queue[.DecisionRequest] = DecisionRequest(requestId: requestId, actionTypes: arrActionTypes)
                     self.callMonetateAPI(requestId: requestId).on(success: { (res) in
                         Log.debug("processEvents context switch - API success")
                         
@@ -178,7 +178,7 @@ public class Personalization {
             Utility.processEvent(context: context, data: event, mqueue: self.queue, contextMap: self.contextMap).on(success: { (queue) in
                 self.queue = queue
                 //adding decision request event
-                self.queue[.DecisionRequest] = DecisionRequest(requestId: requestId)
+                self.queue[.DecisionRequest] = DecisionRequest(requestId: requestId, actionTypes: arrActionTypes)
                 self.callMonetateAPI(requestId: requestId).on(success: { (res) in
                     
                     Log.debug("processEvents without context switch  - API success")
@@ -210,14 +210,14 @@ public class Personalization {
 
      status is the value returned from {meta: {code: ###}}. Anything other than 200 does not include actions in the return.
      */
-    public func getActions (context:ContextEnum, requestId: String, event: MEvent?) -> Future<APIResponse, Error> {
+    public func getActions (context:ContextEnum, requestId: String, arrActionTypes:[ActionTypeEnum], event: MEvent?) -> Future<APIResponse, Error> {
         
         let promise = Promise <APIResponse, Error>()
         if let event = event {
-            processEvents(context, event, requestId, promise)
+            processEvents(context, event, requestId, arrActionTypes, promise)
         }else {
             //adding decision request event
-            processDecision(requestId, promise)
+            processDecision(requestId, arrActionTypes, promise)
         }
         
         return promise.future
@@ -238,7 +238,7 @@ public class Personalization {
 
      status is the value returned from {meta: {code: ###}}. Anything other than 200 does not include actions in the return.
      */
-    public func getActions (requestId: String, eventsDict:[ContextEnum: MEvent]) -> Future<APIResponse, Error> {
+    public func getActions (requestId: String, arrActionTypes:[ActionTypeEnum], eventsDict:[ContextEnum: MEvent]) -> Future<APIResponse, Error> {
         
         let promise = Promise <APIResponse, Error>()
         for object in eventsDict {
@@ -246,7 +246,7 @@ public class Personalization {
                 self.queue = queue
             })
         }
-        processDecision(requestId, promise)
+        processDecision(requestId, arrActionTypes, promise)
         return promise.future
     }
     
@@ -282,15 +282,15 @@ public class Personalization {
      status is the value returned from {meta: {code: ###}}. Anything other than 200 does not include actions in the return.
 
      */
-    public func getActionsData(requestId: String) -> Future<APIResponse, Error>  {
+    public func getActionsData(requestId: String, arrActionTypes:[ActionTypeEnum]) -> Future<APIResponse, Error>  {
         let promise = Promise <APIResponse, Error>()
-        processDecision(requestId, promise)
+        processDecision(requestId, arrActionTypes, promise)
         return promise.future
     }
     
-    fileprivate func processDecision(_ requestId: String, _ promise: Promise<APIResponse, Error>) {
+    fileprivate func processDecision(_ requestId: String, _ arrActionTypes:[ActionTypeEnum], _ promise: Promise<APIResponse, Error>) {
         //adding decision request event
-        self.queue[.DecisionRequest] = DecisionRequest(requestId: requestId)
+        self.queue[.DecisionRequest] = DecisionRequest(requestId: requestId, actionTypes: arrActionTypes)
         self.callMonetateAPI(requestId: requestId).on(success: { (res) in
             Log.debug("processDecision - API success")
             promise.succeed(value: res)
@@ -300,12 +300,12 @@ public class Personalization {
         })
     }
     
-    func getActions (context:ContextEnum, requestId: String, eventCB: (() -> Future<MEvent, Error>)?) -> Future<APIResponse, Error> {
+    func getActions (context:ContextEnum, requestId: String, arrActionTypes:[ActionTypeEnum], eventCB: (() -> Future<MEvent, Error>)?) -> Future<APIResponse, Error> {
         let promise = Promise <APIResponse, Error>()
         
         if let event = eventCB {
             event().on(success: { (data) in
-                self.processEvents(context, data, requestId, promise)
+                self.processEvents(context, data, requestId, arrActionTypes, promise)
             }, failure: { (er) in
                 Log.debug("getActions with context map - failure")
                 
@@ -313,7 +313,7 @@ public class Personalization {
                 promise.fail(error: er)
             })
         } else {
-            processDecision(requestId, promise)
+            processDecision(requestId, arrActionTypes, promise)
         }
         return promise.future
     }
