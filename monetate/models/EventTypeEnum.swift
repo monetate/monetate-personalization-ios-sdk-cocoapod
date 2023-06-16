@@ -10,16 +10,12 @@ import Foundation
 
 
 public enum ContextEnum: String, MEvent {
-    
-    //These are the contextMap objects that can use auto. These can also be defined in an ad hoc basis in context
     case UserAgent = "monetate:context:UserAgent"
     case IpAddress = "monetate:context:IpAddress"
     case Referrer = "monetate:context:Referrer"
     case Coordinates = "monetate:context:Coordinates"
     case ScreenSize = "monetate:context:ScreenSize"
     case Language = "monetate:context:Language"
-    
-    //events that can be passed as part of a report or getActions call. 
     case Impressions = "monetate:record:Impressions"
     case PageEvents = "monetate:record:PageEvents"
     case PageView = "monetate:context:PageView"

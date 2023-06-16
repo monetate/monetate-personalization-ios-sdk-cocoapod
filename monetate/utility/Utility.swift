@@ -11,7 +11,7 @@ import Foundation
 
 class Utility {
     
-    static func processEvent (context:ContextEnum, data: MEvent, mqueue: [ContextEnum: MEvent], contextMap: ContextMap) -> Future<[ContextEnum: MEvent], Error> {
+    static func processEvent (context:ContextEnum, data: MEvent, mqueue: [ContextEnum: MEvent]) -> Future<[ContextEnum: MEvent], Error> {
         var queue = mqueue
         let promise = Promise<[ContextEnum: MEvent], Error>()
         switch context {
@@ -41,16 +41,7 @@ class Utility {
             } else {
                 queue[.ProductDetailView] = data
             }
-            if let cart = contextMap.productDetailView {
-                cart().on { (data) in
-                    if let event = queue[.ProductDetailView] as? ProductDetailView, let lines1 = event.products, let lines2 = data.products {
-                        event.products = ProductDetailView.merge(first: lines1, second: lines2)
-                    }
-                    promise.succeed(value: queue)
-                }
-            } else {
-                promise.succeed(value: queue)
-            }
+            promise.succeed(value: queue)
             break
         case .ProductThumbnailView:
             if let event = queue[.ProductThumbnailView] as? ProductThumbnailView, let data = data as? ProductThumbnailView {
@@ -58,16 +49,7 @@ class Utility {
             } else {
                 queue[.ProductThumbnailView] = data
             }
-            if let cart = contextMap.productThumbnailView {
-                cart().on { (data) in
-                    if let event = queue[.ProductThumbnailView] as? ProductThumbnailView {
-                        event.products = event.products.union(data.products)
-                    }
-                    promise.succeed(value: queue)
-                }
-            }else {
-                promise.succeed(value: queue)
-            }
+            promise.succeed(value: queue)
             break
         case .Cart:
             if let key = queue[.Cart] as? Cart, let lines1 = key.cartLines, let data = data as? Cart, let lines2 = data.cartLines {
@@ -75,16 +57,7 @@ class Utility {
             } else {
                 queue[.Cart] = data
             }
-            if let cart = contextMap.cart {
-                cart().on { (data) in
-                    if let event = queue[.Cart] as? Cart, let lines1 = event.cartLines, let lines2 = data.cartLines {
-                        event.cartLines = Cart.merge(first: lines1, second: lines2)
-                    }
-                    promise.succeed(value: queue)
-                }
-            } else {
-                promise.succeed(value: queue)
-            }
+            promise.succeed(value: queue)
             break
         case .AddToCart:
             if let key = queue[.AddToCart] as? AddToCart, let lines1 = key.cartLines, let data = data as? AddToCart, let lines2 = data.cartLines {
@@ -92,16 +65,7 @@ class Utility {
             } else {
                 queue[.AddToCart] = data
             }
-            if let addToCart = contextMap.addToCart {
-                addToCart().on { (data) in
-                    if let event = queue[.AddToCart] as? AddToCart, let lines1 = event.cartLines, let lines2 = data.cartLines {
-                        event.cartLines = AddToCart.merge(first: lines1, second: lines2)
-                    }
-                    promise.succeed(value: queue)
-                }
-            } else {
-                promise.succeed(value: queue)
-            }
+            promise.succeed(value: queue)
             break
         case .Purchase:
             if let event = queue[.Purchase] as? Purchase, let lines1 = event.purchaseLines, let data = data as? Purchase, let lines2 = data.purchaseLines  {
@@ -109,16 +73,7 @@ class Utility {
             } else {
                 queue[.Purchase] = data
             }
-            if let cart = contextMap.purchase {
-                cart().on { (data) in
-                    if let event = queue[.Purchase] as? Purchase, let lines1 = event.purchaseLines, let lines2 = data.purchaseLines {
-                        event.purchaseLines = Purchase.merge(first: lines1, second: lines2)
-                    }
-                    promise.succeed(value: queue)
-                }
-            } else {
-                promise.succeed(value: queue)
-            }
+            promise.succeed(value: queue)
             break
         case .Metadata:
             if let event = queue[.Metadata] as? Metadata, let data = data as? Metadata {

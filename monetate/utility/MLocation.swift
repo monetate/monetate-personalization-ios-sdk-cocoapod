@@ -10,7 +10,7 @@ import Foundation
 import CoreLocation
 
 class MLocation : NSObject {
-
+    
     var monetateLM = CLLocationManager()
     func getLocationSerStatus()-> String {
         if CLLocationManager.locationServicesEnabled() {
@@ -31,26 +31,18 @@ class MLocation : NSObject {
     }
     
     func getCoordinates () {
-        if getLocationSerStatus().contains("AuthorizedAlways")
-            || getLocationSerStatus().contains("AuthorizedWhenInUse")
-        {
+        if getLocationSerStatus().contains("AuthorizedAlways") || getLocationSerStatus().contains("AuthorizedWhenInUse") {
             monetateLM.delegate = self
-            
         }
     }
-    
 }
 
 extension MLocation: CLLocationManagerDelegate {
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let loc = locations.last else {return }
-        let lat = loc.coordinate.latitude
-        let lng = loc.coordinate.longitude
-        if let val = Personalization.shared.getContextMap().getCoordinates()?.isAuto, val == true {
-            Personalization.shared.getContextMap().setCoordinates(coords:  Coordinates(latitude: String(format: "%.2f", lat), longitude: String(format: "%.2f", lng)))
-        }
+//        let lat = loc.coordinate.latitude
+//        let lng = loc.coordinate.longitude
     }
-    
 }
 
 
