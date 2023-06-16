@@ -21,7 +21,6 @@
 		1DF4DB49256D8C790047E014 /* ReportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D2F4366256BC4930032FFB3 /* ReportTests.swift */; };
 		1F157C7E26B02FCC000D952B /* ScheduleTimer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F157C4B26B02FCC000D952B /* ScheduleTimer.swift */; };
 		1F157C7F26B02FCC000D952B /* Personalization.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F157C4C26B02FCC000D952B /* Personalization.swift */; };
-		1F157C8026B02FCC000D952B /* ContextMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F157C4D26B02FCC000D952B /* ContextMap.swift */; };
 		1F157C8126B02FCC000D952B /* UserID.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F157C4E26B02FCC000D952B /* UserID.swift */; };
 		1F157C8226B02FCC000D952B /* Device.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F157C4F26B02FCC000D952B /* Device.swift */; };
 		1F157C8326B02FCC000D952B /* Account.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F157C5026B02FCC000D952B /* Account.swift */; };
@@ -102,7 +101,6 @@
 		1D6F8840256E8B1E00A5CE6A /* GetActionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetActionTests.swift; sourceTree = "<group>"; };
 		1F157C4B26B02FCC000D952B /* ScheduleTimer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ScheduleTimer.swift; sourceTree = "<group>"; };
 		1F157C4C26B02FCC000D952B /* Personalization.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Personalization.swift; sourceTree = "<group>"; };
-		1F157C4D26B02FCC000D952B /* ContextMap.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ContextMap.swift; sourceTree = "<group>"; };
 		1F157C4E26B02FCC000D952B /* UserID.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UserID.swift; sourceTree = "<group>"; };
 		1F157C4F26B02FCC000D952B /* Device.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Device.swift; sourceTree = "<group>"; };
 		1F157C5026B02FCC000D952B /* Account.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Account.swift; sourceTree = "<group>"; };
@@ -201,7 +199,6 @@
 			children = (
 				1F157C4B26B02FCC000D952B /* ScheduleTimer.swift */,
 				1F157C4C26B02FCC000D952B /* Personalization.swift */,
-				1F157C4D26B02FCC000D952B /* ContextMap.swift */,
 				1F157C4E26B02FCC000D952B /* UserID.swift */,
 				1F157C4F26B02FCC000D952B /* Device.swift */,
 				1F157C5026B02FCC000D952B /* Account.swift */,
@@ -520,7 +517,6 @@
 				1F157C9526B02FCC000D952B /* ScreenSize.swift in Sources */,
 				1F157C8B26B02FCC000D952B /* PageEvent.swift in Sources */,
 				1F157C9426B02FCC000D952B /* APIResponse.swift in Sources */,
-				1F157C8026B02FCC000D952B /* ContextMap.swift in Sources */,
 				1F157C8D26B02FCC000D952B /* DecisionRequest.swift in Sources */,
 				1F157C9226B02FCC000D952B /* ProductDetailView.swift in Sources */,
 				1F157C8F26B02FCC000D952B /* CustomVariables.swift in Sources */,
