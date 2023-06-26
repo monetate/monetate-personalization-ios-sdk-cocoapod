@@ -28,19 +28,4 @@ public struct UserAgent: Context, Codable {
         eventType = "monetate:context:UserAgent"
         self.userAgent = userAgent
     }
-    
-    public init(_ userAgent: String) {
-        eventType = "monetate:context:UserAgent"
-        self.userAgent = userAgent
-    }
-    
-    public init(auto: Bool) {
-        eventType = "monetate:context:UserAgent"
-        userAgent = "nil"
-        if (auto) {
-            self.userAgent = UAString()
-        }
-    }
-    
-    
 }

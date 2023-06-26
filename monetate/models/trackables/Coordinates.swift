@@ -28,16 +28,6 @@ public class Coordinates : Context, Codable {
     public init(latitude: String, longitude: String) {
         self.latitude = latitude
         self.longitude = longitude
-        self.isAuto = false
         self.eventType = "monetate:context:Coordinates"
     }
-    
-    public let isAuto: Bool
-    
-    public init(auto: Bool) {
-        //TODO: handle auto initialization logic when location access in enabled
-        self.isAuto = auto
-        self.eventType = "monetate:context:Coordinates"
-    }
-    
 }
