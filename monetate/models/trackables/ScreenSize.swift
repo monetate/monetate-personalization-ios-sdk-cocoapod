@@ -30,16 +30,4 @@ public class ScreenSize : Context,Codable {
         self.height = height
         self.width = width
     }
-    
-    public init(auto: Bool) {
-        eventType = "monetate:context:ScreenSize"
-        if auto {
-            let (width, height) = Device.getDeviceSize()
-            self.width = Int(truncating: width)
-            self.height = Int(truncating: height)
-        } else {
-            self.width = 0
-            self.height = 0
-        }
-    }
 }

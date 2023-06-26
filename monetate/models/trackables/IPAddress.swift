@@ -29,14 +29,4 @@ public struct IPAddress: Context,Codable {
         eventType = "monetate:context:IpAddress"
         self.ipAddress = ipAddress
     }
-    
-    public init(auto: Bool) {
-        eventType = "monetate:context:IpAddress"
-        self.ipAddress = ""
-        if auto {
-            if let ip = Device.getIPAddress() {
-                self.ipAddress = ip
-            }
-        } 
-    }
 }
