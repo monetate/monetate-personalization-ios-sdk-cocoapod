@@ -1,5 +1,5 @@
 
-kibo-personalization-sdk: iOS
+Monetate-personalization-sdk: iOS
 
 Overview:-
 This SDK enables easy communication with Engine API and can be used by any application which is built using iOS
@@ -8,7 +8,7 @@ Using this SDK we can report events and get actions from Engine API.
 
 Installation:-
  pod 'monetate-ios-sdk'
- pod 'monetate-ios-sdk', :git => 'https://github.com/monetate/kibo-ios-sdk-cocoapod.git', :branch => 'main'
+ pod 'monetate-ios-sdk', :git => 'https://github.com/monetate/monetate-personalization-ios-sdk-cocoapod.git ', :branch => 'main'
 
 
 Getting started with development :-

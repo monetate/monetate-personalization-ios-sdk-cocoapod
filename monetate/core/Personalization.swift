@@ -314,6 +314,7 @@ public class Personalization {
         
         var body:[String:Any] = [
             "channel":account.getChannel(),
+            "sdkVersion": account.getSDKVersion(),
             "events": Utility.createEventBody(queue: self.queue)]
         if let val = self.user.monetateId { body["monetateId"] = val }
         if let val = self.user.deviceId { body["deviceId"] = val }
