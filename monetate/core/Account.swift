@@ -23,9 +23,6 @@ public struct Account:Codable {
         self.domain = domain
         self.name = name
         self.shortname = shortname
-        if let text = Bundle(for: Personalization.self).infoDictionary?["CFBundleShortVersionString"] as? String {
-            print(text)
-        }
     }
     
     func getSDKVersion() -> String {
