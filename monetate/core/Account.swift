@@ -13,19 +13,27 @@ public struct Account:Codable {
     private var domain: String
     private var name: String
     private var shortname: String
+    
     /**
      Contains standard domain name instance and shortname
-    */
+     */
+    
     public init(instance: String, domain:String, name:String, shortname:String) {
         self.instance = instance
         self.domain = domain
         self.name = name
         self.shortname = shortname
     }
-     func getChannel () -> String {
+    
+    func getSDKVersion() -> String {
+        return (Bundle(for: Personalization.self).infoDictionary?["CFBundleShortVersionString"] as? String)!
+    }
+    
+    func getChannel () -> String {
         return "\(name)/\(instance)/\(domain)"
     }
-     func getShortName () -> String {
+    
+    func getShortName () -> String {
         return self.shortname
     }
 }

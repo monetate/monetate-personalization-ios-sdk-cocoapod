@@ -12,6 +12,7 @@ public enum ActionTypeEnum: String, Codable {
     case OmniChannelJson = "monetate:action:OmnichannelJson"
     case OmniChannelRecommendation = "monetate:action:OmnichannelRecommendation"
     case OmniSocialProofData = "monetate:action:SocialProofDataV2"
+    case OmniImageBadging = "monetate:action:OmniChannelImageBadging"
 }
 
 public class DecisionRequest: MEvent, Codable {
