@@ -129,10 +129,38 @@ class PersonalizationTests: XCTestCase {
         XCTAssertEqual(output2, false, "ProductDetailView context is not switched")
     }
     
+    func testRecClicks() {
+        Personalization.shared.report(context: .RecClicks, event: RecClicks(recClicks: ["rt.1.xxx"]))
+    }
+    
+    func testRecImpressions() {
+        Personalization.shared.report(context: .RecImpressions, event: RecImpressions(recImpressions: ["rt.1.yyy"]))
+    }
+    
+    func testEndCapClicks() {
+        let endCapEvent = EndcapEvent(actionId: "1234567", products: [Product(productId: "product72", sku: "product72-large-green")])
+        Personalization.shared.report(context: .EndcapClicks, event: EndcapClicks(endcapClicks: [endCapEvent]))
+    }
+    
+    func testEndCapImpressions() {
+        let endCapEvent = EndcapEvent(actionId: "1234567", products: [Product(productId: "product72", sku: "product72-large-green")])
+        Personalization.shared.report(context: .EndcapImpressions, event: EndcapImpressions(endcapImpressions: [endCapEvent]))
+    }
+    
+    func testImpressions() {
+        Personalization.shared.report(context: .Impressions, event: Impressions(impressionIds: ["rt.1.yyy"]))
+    }
+        
+    func testClosedSession() {
+        let jsonVal = JSONValue(dictionaryLiteral: ("closedSession", JSONValue(dictionaryLiteral: ("accountId", "458796"))), ("version", JSONValue(stringLiteral: "1.0.0")), ("eventType", JSONValue(stringLiteral: "monetate:context:ClosedSession")))
+        
+        Personalization.shared.report(context: .ClosedSession, event: ClosedSession(closedSession:jsonVal , version: "1.0.0"))
+    }
+    
     private func setupPersonalizationSDK () {
         Personalization.setup(
             account: Account(instance: "p", domain: "localhost.org", name: "a-701b337c", shortname: "localhost"),
-            user: User(monetateId: "auto")
+            user: User(monetateId: getMonetateId(), deviceId: getDeviceId(key: "1234"), customerId: "98765")
         )
         
         

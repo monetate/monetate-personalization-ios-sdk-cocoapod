@@ -21,15 +21,15 @@ class ScreenSizeTest: XCTestCase {
     }
     
     func testIsFlushNotRequired () {
-        let val1 = ScreenSize(height: 1024, width: 800)
-        let val2 = ScreenSize(height: 1024, width: 800)
+        let val1 = ScreenSize(height: Device.getDeviceSize().height.intValue, width: Device.getDeviceSize().width.intValue)
+        let val2 = ScreenSize(height: Device.getDeviceSize().height.intValue, width: Device.getDeviceSize().width.intValue)
         
         let result = val1.isContextSwitched(ctx: val2)
         XCTAssertTrue(result == false, "Flush was not required")
     }
     
     func testIsFlushRequired () {
-        let val1 = ScreenSize(height: 1024, width: 800)
+        let val1 = ScreenSize(height: Device.getDeviceSize().height.intValue, width: Device.getDeviceSize().width.intValue)
         let val2 = ScreenSize(height: 1024, width: 900)
         
         let result = val1.isContextSwitched(ctx: val2)

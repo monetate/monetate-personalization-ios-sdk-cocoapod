@@ -1,15 +1,15 @@
 //
-//  IpAddressTest.swift
+//  ReferrerTest.swift
 //  monetate-ios-sdkTests
 //
-//  Created by Umar Sayyed on 03/11/20.
-//  Copyright © 2020 Monetate. All rights reserved.
+//  Created by Rajan Marathe on 12/10/23.
+//  Copyright © 2023 Monetate. All rights reserved.
 //
 
 import XCTest
 @testable import Monetate
 
-class IpAddressTest: XCTestCase {   
+final class ReferrerTest: XCTestCase {
     
     override func setUp() {
         super.setUp()
@@ -20,16 +20,16 @@ class IpAddressTest: XCTestCase {
     }
     
     func testIsFlushNotRequired () {
-        let val1 = IPAddress(ipAddress: Device.getIPAddress()!)
-        let val2 = IPAddress(ipAddress: Device.getAddress(for: NetworkType.wifi)!)
+        let val1 = Referrer(referrer: "www.amazon.in")
+        let val2 = Referrer(referrer: "www.amazon.in")
         
         let result = val1.isContextSwitched(ctx: val2)
         XCTAssertTrue(result == false, "Flush was not required")
     }
     
     func testIsFlushRequired () {
-        let val1 = IPAddress(ipAddress: IPAddressUtil.getWiFiAddress()!)
-        let val2 = IPAddress(ipAddress: "192.168.0.9")
+        let val1 = Referrer(referrer: "www.amazon.in")
+        let val2 = Referrer(referrer: "www.flipkart.com")
         
         let result = val1.isContextSwitched(ctx: val2)
         XCTAssertTrue(result == true, "Flush was required")

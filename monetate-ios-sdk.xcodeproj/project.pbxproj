@@ -71,6 +71,9 @@
 		228CF1822125CEE100D3E188 /* Monetate.plist in Resources */ = {isa = PBXBuildFile; fileRef = 228CF1812125CEE100D3E188 /* Monetate.plist */; };
 		22E0FACD210B68D3002E6B93 /* Monetate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 22E0FAC3210B68D3002E6B93 /* Monetate.framework */; };
 		22E0FAD4210B68D3002E6B93 /* monetate_ios_sdk.h in Headers */ = {isa = PBXBuildFile; fileRef = 22E0FAC6210B68D3002E6B93 /* monetate_ios_sdk.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		46746A872AD6D388001C6A8B /* CoordinatesTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46746A862AD6D388001C6A8B /* CoordinatesTest.swift */; };
+		46746A892AD83214001C6A8B /* ReferrerTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46746A882AD83214001C6A8B /* ReferrerTest.swift */; };
+		46746A8B2AD98B55001C6A8B /* LanguageTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46746A8A2AD98B55001C6A8B /* LanguageTest.swift */; };
 		DFBB54B12872E6EB0005DBDF /* RecClicks.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFBB54B02872E6EB0005DBDF /* RecClicks.swift */; };
 		DFBB54B32872E6FF0005DBDF /* RecImpressions.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFBB54B22872E6FF0005DBDF /* RecImpressions.swift */; };
 /* End PBXBuildFile section */
@@ -157,6 +160,9 @@
 		22E0FAC7210B68D3002E6B93 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		22E0FACC210B68D3002E6B93 /* monetate-ios-sdkTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "monetate-ios-sdkTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		22E0FAD3210B68D3002E6B93 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		46746A862AD6D388001C6A8B /* CoordinatesTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoordinatesTest.swift; sourceTree = "<group>"; };
+		46746A882AD83214001C6A8B /* ReferrerTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferrerTest.swift; sourceTree = "<group>"; };
+		46746A8A2AD98B55001C6A8B /* LanguageTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LanguageTest.swift; sourceTree = "<group>"; };
 		DFBB54B02872E6EB0005DBDF /* RecClicks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecClicks.swift; sourceTree = "<group>"; };
 		DFBB54B22872E6FF0005DBDF /* RecImpressions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecImpressions.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -322,6 +328,9 @@
 				1D2D2A75255164D10041D0DD /* UserAgentTest.swift */,
 				1D2D2A77255165110041D0DD /* IpAddressTest.swift */,
 				1D2D2A79255165360041D0DD /* ScreenSizeTest.swift */,
+				46746A862AD6D388001C6A8B /* CoordinatesTest.swift */,
+				46746A882AD83214001C6A8B /* ReferrerTest.swift */,
+				46746A8A2AD98B55001C6A8B /* LanguageTest.swift */,
 			);
 			path = Events;
 			sourceTree = "<group>";
@@ -555,10 +564,13 @@
 				1D2D2A6E255163470041D0DD /* CartEventTest.swift in Sources */,
 				1D2D2A7C2551704A0041D0DD /* TimerQueueTests.swift in Sources */,
 				221195462137144600B88E49 /* TestHelpers.m in Sources */,
+				46746A872AD6D388001C6A8B /* CoordinatesTest.swift in Sources */,
 				1D2D2A76255164D10041D0DD /* UserAgentTest.swift in Sources */,
 				1D2D2A74255164B20041D0DD /* ProductDetailViewTest.swift in Sources */,
 				1D2D2A6B255161190041D0DD /* CustomVariablesEventTest.swift in Sources */,
 				221195402136DAD400B88E49 /* TestViewController.m in Sources */,
+				46746A892AD83214001C6A8B /* ReferrerTest.swift in Sources */,
+				46746A8B2AD98B55001C6A8B /* LanguageTest.swift in Sources */,
 				1D2D2A702551640D0041D0DD /* PurchaseEventTest.swift in Sources */,
 				1D2D2A722551642E0041D0DD /* MetadataEventTest.swift in Sources */,
 				1DF4DB49256D8C790047E014 /* ReportTests.swift in Sources */,

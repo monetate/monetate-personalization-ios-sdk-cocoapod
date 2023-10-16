@@ -186,7 +186,94 @@ class GetActionTests: XCTestCase {
         wait(for: [exp], timeout: 6)
         XCTAssertEqual(code, 200, "testGetActions not working as expected")
     }
-
+    
+    func testGetActionsMultiContext () {
+        let exp = XCTestExpectation(description: "Testing testGetActions api ")
+        var code = 400;
+        Personalization.shared.addEvent(context: .ScreenSize, event: ScreenSize(height: 1800, width: 1024))
+        Personalization.shared.addEvent(context: .PageView, event: PageView(pageType: "PDP", path: "n/a", url: "n/a", categories: [], breadcrumbs: []))
+        
+        Personalization.shared.getActionsData(requestId: requestid, arrActionTypes: [.OmniChannelJson]).on(success: { (res) in
+            
+            print("response", res.status, res.data?.toString)
+            if let key = res.status {
+                code = key
+            }
+            exp.fulfill()
+        })
+        wait(for: [exp], timeout: 6)
+        XCTAssertEqual(code, 200, "testGetActions not working as expected")
+    }
+    
+    func testGetActionsWithActionFilters () {
+        let exp = XCTestExpectation(description: "Testing testGetActions api ")
+        var code = 400;
+        Personalization.shared.addEvent(context: .ScreenSize, event: ScreenSize(height: 1800, width: 1024))
+        Personalization.shared.addEvent(context: .PageView, event: PageView(pageType: "PDP", path: "n/a", url: "n/a", categories: [], breadcrumbs: []))
+        
+        Personalization.shared.getActionsData(requestId: requestid, arrActionTypes: [.OmniChannelJson, .OmniChannelRecommendation]).on(success: { (res) in
+            
+            print("response", res.status, res.data?.toString)
+            if let key = res.status {
+                code = key
+            }
+            exp.fulfill()
+        })
+        wait(for: [exp], timeout: 6)
+        XCTAssertEqual(code, 200, "testGetActions not working as expected")
+    }
+    
+    func testGetActionsRecommendation () {
+        let exp = XCTestExpectation(description: "Testing testGetActions api ")
+        var code = 400;
+        Personalization.shared.addEvent(context: .PageView, event: PageView(pageType: "PDP", path: "n/a", url: "n/a", categories: [], breadcrumbs: []))
+        Personalization.shared.addEvent(context: .IpAddress, event: IPAddress(ipAddress: "192.168.0.2"))
+        
+        Personalization.shared.getActionsData(requestId: requestid, arrActionTypes: [.OmniChannelRecommendation]).on(success: { (res) in
+            
+            print("response", res.status, res.data?.toString)
+            if let key = res.status {
+                code = key
+            }
+            exp.fulfill()
+        })
+        wait(for: [exp], timeout: 6)
+        XCTAssertEqual(code, 200, "testGetActions not working as expected")
+    }
+    
+    func testGetActionsSocialProof () {
+        let exp = XCTestExpectation(description: "Testing testGetActions api ")
+        var code = 400;
+        Personalization.shared.addEvent(context: .PageView, event: PageView(pageType: "PDP", path: "n/a", url: "n/a", categories: [], breadcrumbs: []))
+        Personalization.shared.addEvent(context: .IpAddress, event: IPAddress(ipAddress: "192.168.0.1"))
+        
+        Personalization.shared.getActionsData(requestId: requestid, arrActionTypes: [.OmniSocialProofData]).on(success: { (res) in
+            
+            print("response", res.status, res.data?.toString)
+            if let key = res.status {
+                code = key
+            }
+            exp.fulfill()
+        })
+        wait(for: [exp], timeout: 6)
+        XCTAssertEqual(code, 200, "testGetActions not working as expected")
+    }
+    
+    func testGetActionsBadging () {
+        let exp = XCTestExpectation(description: "Testing testGetActions api ")
+        var code = 400;
+        Personalization.shared.getActions(context: .ProductThumbnailView, requestId: "test_request_id", arrActionTypes: [.OmniImageBadging], event: ProductThumbnailView(products: Set(["PROD-278"]))).on(success: { (res) in
+            
+            print("response", res.status, res.data?.toString)
+            if let key = res.status {
+                code = key
+            }
+            exp.fulfill()
+        })
+        wait(for: [exp], timeout: 6)
+        XCTAssertEqual(code, 200, "testGetActions not working as expected")
+    }
+    
     private func setupPersonalizationSDK () {
         Personalization.setup(
            account: Account(instance: "p", domain: "localhost.org", name: "a-701b337c", shortname: "localhost"),
