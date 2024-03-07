@@ -160,7 +160,7 @@ class PersonalizationTests: XCTestCase {
     private func setupPersonalizationSDK () {
         Personalization.setup(
             account: Account(instance: "p", domain: "localhost.org", name: "a-701b337c", shortname: "localhost"),
-            user: User(monetateId: getMonetateId(), deviceId: getDeviceId(key: "1234"), customerId: "98765")
+            user: User(monetateId: "4E48E766-E18B-42F8-8A22-E26ED1798D94", deviceId: "DBAEA657-8045-41E1-BCFE-FDA31DBFAD1C", customerId: "98765")
         )
         
         

@@ -50,7 +50,6 @@
 		1F157C9B26B02FCC000D952B /* PageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F157C6B26B02FCC000D952B /* PageView.swift */; };
 		1F157C9C26B02FCC000D952B /* Action.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F157C6D26B02FCC000D952B /* Action.swift */; };
 		1F157C9D26B02FCC000D952B /* APIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F157C6F26B02FCC000D952B /* APIService.swift */; };
-		1F157C9E26B02FCC000D952B /* KeychainAccess.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F157C7126B02FCC000D952B /* KeychainAccess.swift */; };
 		1F157C9F26B02FCC000D952B /* FutureExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F157C7326B02FCC000D952B /* FutureExtensions.swift */; };
 		1F157CA026B02FCC000D952B /* Future.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F157C7426B02FCC000D952B /* Future.swift */; };
 		1F157CA126B02FCC000D952B /* FutureOperators.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F157C7526B02FCC000D952B /* FutureOperators.swift */; };
@@ -133,7 +132,6 @@
 		1F157C6B26B02FCC000D952B /* PageView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PageView.swift; sourceTree = "<group>"; };
 		1F157C6D26B02FCC000D952B /* Action.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Action.swift; sourceTree = "<group>"; };
 		1F157C6F26B02FCC000D952B /* APIService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = APIService.swift; sourceTree = "<group>"; };
-		1F157C7126B02FCC000D952B /* KeychainAccess.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KeychainAccess.swift; sourceTree = "<group>"; };
 		1F157C7326B02FCC000D952B /* FutureExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FutureExtensions.swift; sourceTree = "<group>"; };
 		1F157C7426B02FCC000D952B /* Future.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Future.swift; sourceTree = "<group>"; };
 		1F157C7526B02FCC000D952B /* FutureOperators.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FutureOperators.swift; sourceTree = "<group>"; };
@@ -278,7 +276,6 @@
 		1F157C7026B02FCC000D952B /* utility */ = {
 			isa = PBXGroup;
 			children = (
-				1F157C7126B02FCC000D952B /* KeychainAccess.swift */,
 				1F157C7226B02FCC000D952B /* futures */,
 				1F157C7726B02FCC000D952B /* SwiftExtensions.swift */,
 				1F157C7826B02FCC000D952B /* FileActions.swift */,
@@ -531,7 +528,6 @@
 				1F157C8F26B02FCC000D952B /* CustomVariables.swift in Sources */,
 				1F157CA926B02FCC000D952B /* MError.swift in Sources */,
 				1F157CA526B02FCC000D952B /* Utility.swift in Sources */,
-				1F157C9E26B02FCC000D952B /* KeychainAccess.swift in Sources */,
 				1F157C9626B02FCC000D952B /* IPAddress.swift in Sources */,
 				1F157C8E26B02FCC000D952B /* CartLine.swift in Sources */,
 				1F157C8126B02FCC000D952B /* UserID.swift in Sources */,
