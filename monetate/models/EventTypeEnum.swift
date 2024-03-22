@@ -19,8 +19,6 @@ public enum ContextEnum: String, MEvent {
     case Impressions = "monetate:record:Impressions"
     case PageEvents = "monetate:record:PageEvents"
     case PageView = "monetate:context:PageView"
-    case EndcapClicks = "monetate:context:EndcapClicks"
-    case EndcapImpressions = "monetate:context:EndcapImpressions"
     case Cart = "monetate:context:Cart"
     case AddToCart = "monetate:context:AddToCart"
     case Purchase = "monetate:context:Purchase"
