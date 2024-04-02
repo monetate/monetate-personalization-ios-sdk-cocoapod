@@ -9,44 +9,25 @@
 import Foundation
 
 public class Personalization {
-    
-    static private var _shared: Personalization!
-    //static members
-    public static var shared:Personalization {
-        if Personalization._shared == nil {
-            fatalError("Error - you must call setup before accessing Personalization.shared")
-        }
-        return Personalization._shared
-    }
-    
-    //setup method
-    /**
-     Creates the object that is used for all SDK activities
-     
-     Init with accountId, userId.
-     */
-    public static func setup(account: Account, user: User) {
-        Personalization._shared = Personalization(account: account, user: user)
-    }
-    
+        
     //class members
     public var account: Account
     private var user: User
-    
+    public var timer: ScheduleTimer?
     
     //constructor
     
-    private init (account: Account, user: User) {
+    public init (account: Account, user: User) {
         self.account = account
         self.user = user
+        self.timer = ScheduleTimer(timeInterval: 0.7, callback: { [self] in
+            _ = self.callMonetateAPI()
+        })
     }
     
     private var queue: [ContextEnum: MEvent] = [:]
     private var errorQueue: [MError] = []
     
-    public var timer = ScheduleTimer(timeInterval: 0.7, callback: {
-        _ = Personalization.shared.callMonetateAPI()
-    })
     
     func isContextSwitched (ctx:ContextEnum, event: MEvent) -> Bool {
         if ((ctx == .UserAgent || ctx == .IpAddress || ctx == .Coordinates ||
@@ -69,11 +50,11 @@ public class Personalization {
             
             Log.debug("callMonetateAPIOnContextSwitched Success - \(self.queue.keys.count)")
             self.queue[context] = event
-            self.timer.resume()
+            self.timer?.resume()
         }, failure: { (er) in
             Log.debug("callMonetateAPIOnContextSwitched Failure")
             
-            self.timer.resume()
+            self.timer?.resume()
         })
     }
     
@@ -128,7 +109,7 @@ public class Personalization {
      */
     public func report (context:ContextEnum, event: MEvent?) {
         guard let event = event else {
-            self.timer.resume()
+            self.timer?.resume()
             return
         }
         if isContextSwitched(ctx: context, event: event) {
@@ -145,7 +126,7 @@ public class Personalization {
             self.queue = queue
             Log.debug("Event Processed")
             
-            self.timer.resume()
+            self.timer?.resume()
         })
     }
     
@@ -321,7 +302,7 @@ public class Personalization {
         if let val = self.user.customerId { body["customerId"] = val }
         Log.debug("success - \(body.toString!)")
         
-        self.timer.suspend()
+        self.timer?.suspend()
         Service.getDecision(url: self.API_URL + account.getShortName(), body: body, headers: nil, success: { (data, status, res) in
             self.queue = [:]
             Log.debug("callMonetateAPI - Success - \(data.toString)")
