@@ -21,5 +21,18 @@ public struct RecClicks: Codable, MEvent {
     public init(recClicks: [String]) {
         eventType = "monetate:record:RecClicks"
         self.recClicks = recClicks
+        try! checkRecClicks()
     }
+    
+    func checkRecClicks () throws {
+        if (!recClicks.isEmpty) {
+            for strRecClicks in recClicks {
+                if (strRecClicks == "") {throw RecClicksError.recClicks(description: "Array contains Invalid RecClick")}
+            }
+        }
+    }
+}
+
+enum RecClicksError : Error {
+    case recClicks(description: String)
 }

@@ -27,7 +27,14 @@ public struct Language: Codable, Context {
     public init(language: String) {
         eventType = "monetate:context:Language"
         self.language = language
+        try! checkLanguage()
     }
     
-    
+    func checkLanguage () throws {
+        if (language == "") {throw LanguageError.language(description: "Invalid language")}
+    }
+}
+
+enum LanguageError : Error {
+    case language(description: String)
 }

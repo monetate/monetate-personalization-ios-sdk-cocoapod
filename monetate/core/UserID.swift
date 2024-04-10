@@ -38,7 +38,9 @@ public class User :Codable {
     }
     
     func checkMonetateIDAndDeviceID () throws {
-        if (monetateId == nil && deviceId == nil) {throw CustomError.UserID(description: "monetateId or deviceId, anyone is required")}
+        if ((monetateId != nil) && monetateId == "") {throw UserIdError.monetateID(description: "Invalid monetateId")}
+        if ((deviceId != nil) && deviceId == "") {throw UserIdError.deviceID(description: "Invalid deviceId")}
+        if (monetateId == nil && deviceId == nil) {throw UserIdError.UserID(description: "monetateId or deviceId, anyone is required")}
     }
     
     public func setCustomerId (customerId: String) {
@@ -46,6 +48,8 @@ public class User :Codable {
     }
 }
 
-enum CustomError : Error {
+enum UserIdError : Error {
     case UserID(description: String)
+    case monetateID(description: String)
+    case deviceID(description: String)
 }

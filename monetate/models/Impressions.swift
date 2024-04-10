@@ -20,7 +20,18 @@ public struct Impressions: Codable, MEvent {
     public init(impressionIds: [String]) {
         eventType = "monetate:record:Impressions"
         self.impressionIds = impressionIds
+        try! checkImpressions()
     }
     
-    
+    func checkImpressions () throws {
+        if (!impressionIds.isEmpty) {
+            for strImpressionId in impressionIds {
+                if (strImpressionId == "") {throw ImpressionsError.impressions(description: "Array contains Invalid impression id")}
+            }
+        }
+    }
+}
+
+enum ImpressionsError : Error {
+    case impressions(description: String)
 }

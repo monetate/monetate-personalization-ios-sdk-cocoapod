@@ -23,6 +23,14 @@ public struct Account:Codable {
         self.domain = domain
         self.name = name
         self.shortname = shortname
+        try! checkAccountInfo()
+    }
+    
+    func checkAccountInfo () throws {
+        if (instance == "") {throw AccountError.instance(description: "Invalid Account instance")}
+        if (domain == "") {throw AccountError.domain(description: "Invalid Account domain")}
+        if (name == "") {throw AccountError.name(description: "Invalid Account name")}
+        if (shortname == "") {throw AccountError.shortname(description: "Invalid Account shortname")}
     }
     
     func getSDKVersion() -> String {
@@ -36,4 +44,11 @@ public struct Account:Codable {
     func getShortName () -> String {
         return self.shortname
     }
+}
+
+enum AccountError : Error {
+    case instance(description: String)
+    case domain(description: String)
+    case name(description: String)
+    case shortname(description: String)
 }

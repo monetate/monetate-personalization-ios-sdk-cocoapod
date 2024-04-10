@@ -29,5 +29,14 @@ public class ScreenSize : Context,Codable {
         eventType = "monetate:context:ScreenSize"
         self.height = height
         self.width = width
+        try! checkScreenSize()
     }
+    
+    func checkScreenSize () throws {
+        if (height <= 0 || width <= 0) {throw ScreenSizeError.screenSize(description: "Invalid screen size")}
+    }
+}
+
+enum ScreenSizeError : Error {
+    case screenSize(description: String)
 }

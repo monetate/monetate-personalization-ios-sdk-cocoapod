@@ -27,5 +27,14 @@ public struct UserAgent: Context, Codable {
     public init(userAgent: String) {
         eventType = "monetate:context:UserAgent"
         self.userAgent = userAgent
+        try! checkUserAgent()
     }
+    
+    func checkUserAgent () throws {
+        if (userAgent == "") {throw AccountError.instance(description: "Invalid user agent")}
+    }
+}
+
+enum UserAgentError : Error {
+    case userAgent(description: String)
 }

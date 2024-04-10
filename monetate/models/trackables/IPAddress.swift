@@ -28,5 +28,14 @@ public struct IPAddress: Context,Codable {
     public init(ipAddress: String) {
         eventType = "monetate:context:IpAddress"
         self.ipAddress = ipAddress
+        try! checkIPAddress()
     }
+    
+    func checkIPAddress () throws {
+        if (ipAddress == "") {throw IPAddressError.ipAddress(description: "Invalid ipAddress")}
+    }
+}
+
+enum IPAddressError : Error {
+    case ipAddress(description: String)
 }

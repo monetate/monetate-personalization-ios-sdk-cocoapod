@@ -27,6 +27,15 @@ public struct Referrer: Codable, Context {
     public init(referrer: String) {
         eventType = "monetate:context:Referrer"
         self.referrer = referrer
+        try! checkReferrer()
     }
+    
+    func checkReferrer () throws {
+        if (referrer == "") {throw ReferrerError.referrer(description: "Invalid referrer")}
+    }
+}
+
+enum ReferrerError : Error {
+    case referrer(description: String)
 }
 

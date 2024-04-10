@@ -20,7 +20,19 @@ public class PageEvents: Codable, MEvent {
     public init(pageEvents: Set<String>) {
         eventType = "monetate:record:PageEvents"
         self.pageEvents = pageEvents
+        try! checkPageEvents()
     }
     
+    func checkPageEvents () throws {
+        if (!pageEvents.isEmpty) {
+            for strPageEvent in pageEvents {
+                if (strPageEvent == "") {throw PageEventsError.pageEvent(description: "Array contains Invalid pageEvent")}
+            }
+        }
+    }
+}
+
+enum PageEventsError : Error {
+    case pageEvent(description: String)
 }
 

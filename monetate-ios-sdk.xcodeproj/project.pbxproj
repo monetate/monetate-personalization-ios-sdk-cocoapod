@@ -45,8 +45,6 @@
 		1F157C9626B02FCC000D952B /* IPAddress.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F157C6626B02FCC000D952B /* IPAddress.swift */; };
 		1F157C9726B02FCC000D952B /* UserAgent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F157C6726B02FCC000D952B /* UserAgent.swift */; };
 		1F157C9826B02FCC000D952B /* Coordinates.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F157C6826B02FCC000D952B /* Coordinates.swift */; };
-		1F157C9926B02FCC000D952B /* EndcapClicks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F157C6926B02FCC000D952B /* EndcapClicks.swift */; };
-		1F157C9A26B02FCC000D952B /* EndcapImpressions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F157C6A26B02FCC000D952B /* EndcapImpressions.swift */; };
 		1F157C9B26B02FCC000D952B /* PageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F157C6B26B02FCC000D952B /* PageView.swift */; };
 		1F157C9C26B02FCC000D952B /* Action.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F157C6D26B02FCC000D952B /* Action.swift */; };
 		1F157C9D26B02FCC000D952B /* APIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F157C6F26B02FCC000D952B /* APIService.swift */; };
@@ -127,8 +125,6 @@
 		1F157C6626B02FCC000D952B /* IPAddress.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IPAddress.swift; sourceTree = "<group>"; };
 		1F157C6726B02FCC000D952B /* UserAgent.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UserAgent.swift; sourceTree = "<group>"; };
 		1F157C6826B02FCC000D952B /* Coordinates.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Coordinates.swift; sourceTree = "<group>"; };
-		1F157C6926B02FCC000D952B /* EndcapClicks.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EndcapClicks.swift; sourceTree = "<group>"; };
-		1F157C6A26B02FCC000D952B /* EndcapImpressions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EndcapImpressions.swift; sourceTree = "<group>"; };
 		1F157C6B26B02FCC000D952B /* PageView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PageView.swift; sourceTree = "<group>"; };
 		1F157C6D26B02FCC000D952B /* Action.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Action.swift; sourceTree = "<group>"; };
 		1F157C6F26B02FCC000D952B /* APIService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = APIService.swift; sourceTree = "<group>"; };
@@ -239,8 +235,6 @@
 				1F157C6226B02FCC000D952B /* ProductThumbnail.swift */,
 				1F157C6326B02FCC000D952B /* APIResponse.swift */,
 				1F157C6426B02FCC000D952B /* trackables */,
-				1F157C6926B02FCC000D952B /* EndcapClicks.swift */,
-				1F157C6A26B02FCC000D952B /* EndcapImpressions.swift */,
 				1F157C6B26B02FCC000D952B /* PageView.swift */,
 			);
 			path = models;
@@ -514,7 +508,6 @@
 				1F157C7E26B02FCC000D952B /* ScheduleTimer.swift in Sources */,
 				1F157CA226B02FCC000D952B /* CancellationToken.swift in Sources */,
 				1F157C9326B02FCC000D952B /* ProductThumbnail.swift in Sources */,
-				1F157C9926B02FCC000D952B /* EndcapClicks.swift in Sources */,
 				1F157C8A26B02FCC000D952B /* Impressions.swift in Sources */,
 				1F157CA426B02FCC000D952B /* FileActions.swift in Sources */,
 				1F157CA026B02FCC000D952B /* Future.swift in Sources */,
@@ -544,7 +537,6 @@
 				DFBB54B32872E6FF0005DBDF /* RecImpressions.swift in Sources */,
 				1F157C9B26B02FCC000D952B /* PageView.swift in Sources */,
 				1F157C8726B02FCC000D952B /* JSONValue.swift in Sources */,
-				1F157C9A26B02FCC000D952B /* EndcapImpressions.swift in Sources */,
 				1F157C9026B02FCC000D952B /* Purchase.swift in Sources */,
 				1F157C9F26B02FCC000D952B /* FutureExtensions.swift in Sources */,
 				1F157C8826B02FCC000D952B /* Language.swift in Sources */,

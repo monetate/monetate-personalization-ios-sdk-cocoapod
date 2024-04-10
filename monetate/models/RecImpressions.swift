@@ -21,5 +21,18 @@ public struct RecImpressions: Codable, MEvent {
     public init(recImpressions: [String]) {
         eventType = "monetate:record:RecImpressions"
         self.recImpressions = recImpressions
+        try! checkRecImpressions()
     }
+    
+    func checkRecImpressions () throws {
+        if (!recImpressions.isEmpty) {
+            for strRecImpression in recImpressions {
+                if (strRecImpression == "") {throw RecImpressionsError.recImpressions(description: "Array contains Invalid RecImpression")}
+            }
+        }
+    }
+}
+
+enum RecImpressionsError : Error {
+    case recImpressions(description: String)
 }
