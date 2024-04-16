@@ -32,16 +32,28 @@ public class Purchase: Codable, MEvent {
         self.instance = instance
         self.purchaseId = purchaseId
         self.purchaseLines = purchaseLines
+        try! checkPurchase()
+    }
+    
+    func checkPurchase () throws {
+        if (account == "") {throw PurchaseError.account(description: "Invalid account")}
+        if (domain == "") {throw PurchaseError.domain(description: "Invalid domain")}
+        if (instance == "") {throw PurchaseError.instance(description: "Invalid instance")}
+        if (purchaseId == "") {throw PurchaseError.purchaseId(description: "Invalid purchaseId")}
     }
     
     static func merge (first: [PurchaseLine], second: [PurchaseLine]) -> [PurchaseLine] {
         let merged = Array(Dictionary([first, second].joined().map { ($0.pid, $0)}, uniquingKeysWith: { $1 }).values)
         return merged
     }
-    
 }
 
-
+enum PurchaseError : Error {
+    case account(description: String)
+    case domain(description: String)
+    case instance(description: String)
+    case purchaseId(description: String)
+}
 
 /** Represents an item in a purchase.  */
 
@@ -64,7 +76,22 @@ public struct PurchaseLine: Codable {
         self.quantity = quantity
         self.currency = currency
         self.value = value
+        try! checkPurchaseLineItem()
     }
     
-    
+    func checkPurchaseLineItem () throws {
+        if (sku == "") {throw PurchaseLineError.sku(description: "Invalid sku")}
+        if (pid == "") {throw PurchaseLineError.pid(description: "Invalid pid")}
+        if (quantity < 0) {throw PurchaseLineError.quantity(description: "Invalid quantity")}
+        if (currency == "") {throw PurchaseLineError.currency(description: "Invalid currency")}
+        if (value == "") {throw PurchaseLineError.value(description: "Invalid value")}
+    }
+}
+
+enum PurchaseLineError : Error {
+    case sku(description: String)
+    case pid(description: String)
+    case quantity(description: String)
+    case currency(description: String)
+    case value(description: String)
 }

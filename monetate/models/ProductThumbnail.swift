@@ -18,7 +18,18 @@ public class ProductThumbnailView: Codable, MEvent {
     public init(products: Set<String>) {
         eventType = "monetate:context:ProductThumbnailView"
         self.products = products
+        try! checkProducs()
     }
     
-    
+    func checkProducs () throws {
+        if (!products.isEmpty) {
+            for strProductId in products {
+                if (strProductId == "") {throw ProductThumbnailViewError.products(description: "Array contains Invalid Product Id")}
+            }
+        }
+    }
+}
+
+enum ProductThumbnailViewError : Error {
+    case products(description: String)
 }

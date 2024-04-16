@@ -62,6 +62,7 @@ public struct CartLine: Codable {
         self.quantity = quantity
         self.currency = currency
         self.value = value
+        try! checkCartLineItem()
     }
     
     func serialize () -> NSDictionary {
@@ -75,6 +76,21 @@ public struct CartLine: Codable {
         return dic as NSDictionary
     }
     
+    func checkCartLineItem () throws {
+        if (sku == "") {throw CartLineError.sku(description: "Invalid sku")}
+        if (pid == "") {throw CartLineError.pid(description: "Invalid pid")}
+        if (quantity < 0) {throw CartLineError.quantity(description: "Invalid quantity")}
+        if (currency == "") {throw CartLineError.currency(description: "Invalid currency")}
+        if (value == "") {throw CartLineError.value(description: "Invalid value")}
+    }
+}
+
+enum CartLineError : Error {
+    case sku(description: String)
+    case pid(description: String)
+    case quantity(description: String)
+    case currency(description: String)
+    case value(description: String)
 }
 
 extension Dictionary {

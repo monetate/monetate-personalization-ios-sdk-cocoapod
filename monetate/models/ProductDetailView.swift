@@ -35,8 +35,17 @@ public struct Product: Codable {
     public init(productId: String, sku: String) {
         self.productId = productId
         self.sku = sku
+        try! checkProduct()
     }
     
-    
+    func checkProduct () throws {
+        if (productId == "") {throw ProductError.productId(description: "Invalid productId")}
+        if (sku == "") {throw ProductError.sku(description: "Invalid sku")}
+    }
+}
+
+enum ProductError : Error {
+    case productId(description: String)
+    case sku(description: String)
 }
 

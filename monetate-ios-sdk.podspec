@@ -16,7 +16,7 @@ Pod::Spec.new do |s|
   #
 
   s.name         = "monetate-ios-sdk"
-  s.version      = "2024.03.22"
+  s.version      = "2024.04.10"
   s.summary      = "Provides convenient access to the Engine API"
 
   # This description is used to generate tags and improve search results.
@@ -80,7 +80,7 @@ Join the 1,000+ brands growing their revenue with Monetate"
   #  Supports git, hg, bzr, svn and HTTP.
   #
 
-  s.source       = { :git => "https://github.com/monetate/monetate-personalization-ios-sdk-cocoapod.git", :tag => "2024.03.22" }
+  s.source       = { :git => "https://github.com/monetate/monetate-personalization-ios-sdk-cocoapod.git", :tag => "2024.04.10" }
 
 
   # ――― Source Code ―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――― #

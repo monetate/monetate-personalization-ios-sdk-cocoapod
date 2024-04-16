@@ -39,7 +39,14 @@ public struct PageView: Codable,Context {
         self.url = url
         self.categories = categories
         self.breadcrumbs = breadcrumbs
+        try! checkPageType()
     }
     
-    
+    func checkPageType () throws {
+        if (pageType == "") {throw PageTypeError.pageType(description: "Invalid pageType")}
+    }
+}
+
+enum PageTypeError : Error {
+    case pageType(description: String)
 }
