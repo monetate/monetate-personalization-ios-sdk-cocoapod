@@ -20,7 +20,7 @@ Initialize
        final var objPersonalization = Personalization(account: Account(instance: "p", domain: "localhost.org", name: "a-701b337c", shortname: "localhost"), user: User(deviceId: "11aa1a1a-111a-111a-11aa-11a1a1111a11"))
 
 Report method:-
-Personalization.shared.report(context: .UserAgent, event: UserAgent(key))
+objPersonalization.report(context: .UserAgent, event: UserAgent(key))
 
 This method reports data to Engine API. It take two arguments, first is eventType and second is eventData which is optional. If eventData is not defined, the SDK looks for data in the Context Map which is defined at the time of initialization.
 
