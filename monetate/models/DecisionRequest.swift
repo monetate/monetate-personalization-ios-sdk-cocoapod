@@ -18,11 +18,13 @@ public enum ActionTypeEnum: String, Codable {
 
 public class DecisionRequest: MEvent, Codable {
     let requestId:String
+    var includeReporting : Bool
     public let eventType: String
     var actionTypes:[ActionTypeEnum]?
     
-    init (requestId:String, actionTypes:[ActionTypeEnum]) {
+    init (requestId:String, includeReporting:Bool, actionTypes:[ActionTypeEnum]) {
         self.requestId = requestId
+        self.includeReporting = includeReporting
         self.eventType = "monetate:decision:DecisionRequest"
         self.actionTypes = actionTypes
     }
