@@ -25,9 +25,18 @@ public class Personalization {
         })
     }
     
+    public func generateMonetateID () -> String {
+        let version = 2
+        let rnd = Int(Int.random(in: 0...2147483647)) // random in between [0, 2^31 - 1)
+        let ts = Int(Date().toMillis()) // current time in millis
+        let token = "\(version).\(rnd).\(ts)"
+
+        Log.debug("generateMonetateID - \(token)", shouldLogContext: false)
+        return token
+    }
+    
     private var queue: [ContextEnum: MEvent] = [:]
     private var errorQueue: [MError] = []
-    
     
     func isContextSwitched (ctx:ContextEnum, event: MEvent) -> Bool {
         if ((ctx == .UserAgent || ctx == .IpAddress || ctx == .Coordinates ||
@@ -36,10 +45,8 @@ public class Personalization {
              ctx == .CustomVariables || ctx == .Language)),
            let val1 = self.queue[ctx] as? Context,
            let val2 = event as? Context, val1.isContextSwitched(ctx: val2) {
-            
             return true
         }
-        
         return false
     }
     
@@ -130,7 +137,7 @@ public class Personalization {
         })
     }
     
-    fileprivate func processEvents(_ context: ContextEnum, _ event: MEvent, _ requestId: String, _ includeReporting: Bool, _ arrActionTypes:[ActionTypeEnum], _ promise: Promise<APIResponse, Error>) {
+    fileprivate func processEvents(_ context: ContextEnum, _ event: MEvent, _ requestId: String, _ includeReporting: Bool, _ arrActionTypes:[String], _ promise: Promise<APIResponse, Error>) {
         if isContextSwitched(ctx: context, event: event) {
             self.callMonetateAPIOnContextSwitchedForGetActions().on(success: { (res1) in
                 Utility.processEvent(context: context, data: event, mqueue: self.queue).on(success: { (mqueue) in
@@ -184,7 +191,7 @@ public class Personalization {
      
      status is the value returned from {meta: {code: ###}}. Anything other than 200 does not include actions in the return.
      */
-    public func getActions (context:ContextEnum, requestId: String, includeReporting: Bool, arrActionTypes:[ActionTypeEnum], event: MEvent?) -> Future<APIResponse, Error> {
+    public func getActions (context:ContextEnum, requestId: String, includeReporting: Bool, arrActionTypes:[String], event: MEvent?) -> Future<APIResponse, Error> {
         
         let promise = Promise <APIResponse, Error>()
         if let event = event {
@@ -210,7 +217,7 @@ public class Personalization {
      
      status is the value returned from {meta: {code: ###}}. Anything other than 200 does not include actions in the return.
      */
-    public func getActions (requestId: String, includeReporting: Bool, arrActionTypes:[ActionTypeEnum], eventsDict:[ContextEnum: MEvent]) -> Future<APIResponse, Error> {
+    public func getActions (requestId: String, includeReporting: Bool, arrActionTypes:[String], eventsDict:[ContextEnum: MEvent]) -> Future<APIResponse, Error> {
         
         let promise = Promise <APIResponse, Error>()
         for object in eventsDict {
@@ -252,13 +259,13 @@ public class Personalization {
      status is the value returned from {meta: {code: ###}}. Anything other than 200 does not include actions in the return.
      
      */
-    public func getActionsData(requestId: String, includeReporting: Bool, arrActionTypes:[ActionTypeEnum]) -> Future<APIResponse, Error>  {
+    public func getActionsData(requestId: String, includeReporting: Bool, arrActionTypes:[String]) -> Future<APIResponse, Error>  {
         let promise = Promise <APIResponse, Error>()
         processDecision(requestId, includeReporting, arrActionTypes, promise)
         return promise.future
     }
     
-    fileprivate func processDecision(_ requestId: String, _ includeReporting: Bool, _ arrActionTypes:[ActionTypeEnum], _ promise: Promise<APIResponse, Error>) {
+    fileprivate func processDecision(_ requestId: String, _ includeReporting: Bool, _ arrActionTypes:[String], _ promise: Promise<APIResponse, Error>) {
         //adding decision request event
         self.queue[.DecisionRequest] = DecisionRequest(requestId: requestId, includeReporting: includeReporting, actionTypes: arrActionTypes)
         self.callMonetateAPI(requestId: requestId).on(success: { (res) in
@@ -270,7 +277,7 @@ public class Personalization {
         })
     }
     
-    func getActions (context:ContextEnum, requestId: String, includeReporting: Bool, arrActionTypes:[ActionTypeEnum], eventCB: (() -> Future<MEvent, Error>)?) -> Future<APIResponse, Error> {
+    func getActions (context:ContextEnum, requestId: String, includeReporting: Bool, arrActionTypes:[String], eventCB: (() -> Future<MEvent, Error>)?) -> Future<APIResponse, Error> {
         let promise = Promise <APIResponse, Error>()
         
         if let event = eventCB {
@@ -332,4 +339,12 @@ public class Personalization {
     }
 }
 
-
+extension Date {
+    func toMillis() -> Int64! {
+        return Int64(self.timeIntervalSince1970 * 1000)
+    }
+    init(millis: Int64) {
+        self = Date(timeIntervalSince1970: TimeInterval(millis / 1000))
+        self.addTimeInterval(TimeInterval(Double(millis % 1000) / 1000 ))
+    }
+}

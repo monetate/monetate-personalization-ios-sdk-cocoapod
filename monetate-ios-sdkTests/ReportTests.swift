@@ -13,7 +13,7 @@ class PersonalizationTests: XCTestCase {
     
     final var personalization = Personalization(
         account: Account(instance: "p", domain: "localhost.org", name: "a-701b337c", shortname: "localhost"),
-        user: User(monetateId: "1.1454546575.1711006580023")
+        user: User(deviceId: "62bd2e2d-213d-463f-83bb-12c0b2530a14")
     )
     
     override func setUp() {
