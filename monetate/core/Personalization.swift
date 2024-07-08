@@ -205,31 +205,6 @@ public class Personalization {
     }
     
     /**
-     Used to record multiple events and also request decisions.
-     
-     requestId the request identifier tying the response back to an event
-     
-     context ? is name of event for example monetate:record:Impressions.
-     
-     eventData ? is data associated with event.
-     
-     Returns an object containing the JSON from appropriate action(s), using the types in the action table below. Those objects are reformatted into a consistent returned json with a required actionType and action.
-     
-     status is the value returned from {meta: {code: ###}}. Anything other than 200 does not include actions in the return.
-     */
-    public func getActions (requestId: String, includeReporting: Bool, arrActionTypes:[String], eventsDict:[ContextEnum: MEvent]) -> Future<APIResponse, Error> {
-        
-        let promise = Promise <APIResponse, Error>()
-        for object in eventsDict {
-            Utility.processEvent(context: object.key, data: object.value, mqueue: self.queue).on(success: { (queue) in
-                self.queue = queue
-            })
-        }
-        processDecision(requestId, includeReporting, arrActionTypes, promise)
-        return promise.future
-    }
-    
-    /**
      Used to add events in queue.
      
      context ? is name of event for example monetate:record:Impressions.
