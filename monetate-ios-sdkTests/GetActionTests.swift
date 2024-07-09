@@ -33,7 +33,7 @@ class GetActionTests: XCTestCase {
         var code = 400;
         personalization.getActions(context: .ProductDetailView, requestId: requestid, includeReporting: true, arrActionTypes: ["monetate:action:OmnichannelJson"], event: ProductDetailView(products: [Product(productId: "PROD-278", sku: "DENIM Jeans")])).on(success: { (res) in
             
-            print("response", res.status, res.data?.toString)
+            print("response", res.status!, res.data!)
             if let key = res.status {
                 code = key
             }
@@ -48,7 +48,7 @@ class GetActionTests: XCTestCase {
         var code = 400;
         personalization.getActions(context: .PageEvents, requestId: requestid, includeReporting: true, arrActionTypes: ["monetate:action:OmnichannelJson"], event: PageEvents(pageEvents: ["Page 1", "Page 2", "Page 3"])).on(success: { (res) in
             
-            print("response", res.status, res.data?.toString)
+            print("response", res.status!, res.data!)
             if let key = res.status {
                 code = key
             }
@@ -63,7 +63,7 @@ class GetActionTests: XCTestCase {
         var code = 400;
         personalization.getActions(context: .PageView, requestId: requestid, includeReporting: true, arrActionTypes: ["monetate:action:OmnichannelJson"], event: PageView(pageType: "profile", path: "/profile", url: "http:/home", categories: nil, breadcrumbs: nil)).on(success: { (res) in
             
-            print("response", res.status, res.data?.toString)
+            print("response", res.status!, res.data!)
             if let key = res.status {
                 code = key
             }
@@ -78,7 +78,7 @@ class GetActionTests: XCTestCase {
         var code = 400;
         personalization.getActions(context: .Purchase, requestId: requestid, includeReporting: true, arrActionTypes: ["monetate:action:OmnichannelJson"], event: Purchase(account: "Flipkart", domain: "www.flipkart.com", instance: "instance-111", purchaseId: "PID-111", purchaseLines: [PurchaseLine(sku: "sku-111", pid: "pid-111", quantity: 2, currency: "USD", value: "111")])).on(success: { (res) in
             
-            print("response", res.status, res.data?.toString)
+            print("response", res.status!, res.data!)
             if let key = res.status {
                 code = key
             }
@@ -93,7 +93,7 @@ class GetActionTests: XCTestCase {
         var code = 400;
         personalization.getActions(context: .Cart, requestId: requestid, includeReporting: true, arrActionTypes: ["monetate:action:OmnichannelJson"], event: Cart(cartLines: [CartLine(sku: "sku-111", pid: "pid-111", quantity: 1, currency: "USD", value: "111")])).on(success: { (res) in
             
-            print("response", res.status, res.data?.toString)
+            print("response", res.status!, res.data!)
             if let key = res.status {
                 code = key
             }
@@ -108,7 +108,7 @@ class GetActionTests: XCTestCase {
         var code = 400;
         personalization.getActions(context: .UserAgent, requestId: requestid, includeReporting: true, arrActionTypes: ["monetate:action:OmnichannelJson"], event: UserAgent(userAgent: "Mozilla")).on(success: { (res) in
             
-            print("response", res.status, res.data?.toString)
+            print("response", res.status!, res.data!)
             if let key = res.status {
                 code = key
             }
@@ -123,7 +123,7 @@ class GetActionTests: XCTestCase {
         var code = 400;
         personalization.getActions(context: .IpAddress, requestId: requestid, includeReporting: true, arrActionTypes: ["monetate:action:OmnichannelJson"], event: IPAddress(ipAddress: "192.168.0.2")).on(success: { (res) in
             
-            print("response", res.status, res.data?.toString)
+            print("response", res.status!, res.data!)
             if let key = res.status {
                 code = key
             }
@@ -139,7 +139,7 @@ class GetActionTests: XCTestCase {
         var code = 400;
         personalization.getActions(context: .Coordinates, requestId: requestid, includeReporting: true, arrActionTypes: ["monetate:action:OmnichannelJson"], event: Coordinates(latitude: "92.687689", longitude: "12.78328913")).on(success: { (res) in
             
-            print("response", res.status, res.data?.toString)
+            print("response", res.status!, res.data!)
             if let key = res.status {
                 code = key
             }
@@ -155,7 +155,7 @@ class GetActionTests: XCTestCase {
         var code = 400;
         personalization.getActions(context: .ScreenSize, requestId: requestid, includeReporting: true, arrActionTypes: ["monetate:action:OmnichannelJson"], event: ScreenSize(height: 1800, width: 1024)).on(success: { (res) in
             
-            print("response", res.status, res.data?.toString)
+            print("response", res.status!, res.data!)
             if let key = res.status {
                 code = key
             }
@@ -170,7 +170,7 @@ class GetActionTests: XCTestCase {
         var code = 400;
         personalization.getActions(context: .Metadata, requestId: requestid, includeReporting: true, arrActionTypes: ["monetate:action:OmnichannelJson"], event: Metadata(metadata: JSONValue.init(dictionaryLiteral: ("fname", "umar"), ("lname", "sayyed")))).on(success: { (res) in
             
-            print("response", res.status, res.data?.toString)
+            print("response", res.status!, res.data!)
             if let key = res.status {
                 code = key
             }
@@ -185,7 +185,7 @@ class GetActionTests: XCTestCase {
         var code = 400;
         personalization.getActions(context: .CustomVariables, requestId: requestid, includeReporting: true, arrActionTypes: ["monetate:action:OmnichannelJson"], event: CustomVariables(customVariables: [CustomVariablesModel(variable: "Variable1", value: JSONValue(stringLiteral: "Value3"))])).on(success: { (res) in
             
-            print("response", res.status, res.data?.toString)
+            print("response", res.status!, res.data!)
             if let key = res.status {
                 code = key
             }
@@ -203,7 +203,7 @@ class GetActionTests: XCTestCase {
         
         personalization.getActionsData(requestId: requestid, includeReporting: true, arrActionTypes: ["monetate:action:OmnichannelJson"]).on(success: { (res) in
             
-            print("response", res.status, res.data?.toString)
+            print("response", res.status!, res.data!)
             if let key = res.status {
                 code = key
             }
@@ -221,7 +221,7 @@ class GetActionTests: XCTestCase {
         
         personalization.getActionsData(requestId: requestid, includeReporting: true, arrActionTypes: ["monetate:action:OmnichannelJson", "monetate:action:OmnichannelRecommendation"]).on(success: { (res) in
             
-            print("response", res.status, res.data?.toString)
+            print("response", res.status!, res.data!)
             if let key = res.status {
                 code = key
             }
@@ -239,7 +239,7 @@ class GetActionTests: XCTestCase {
         
         personalization.getActionsData(requestId: requestid, includeReporting: true, arrActionTypes: ["monetate:action:OmnichannelRecommendation"]).on(success: { (res) in
             
-            print("response", res.status, res.data?.toString)
+            print("response", res.status!, res.data!)
             if let key = res.status {
                 code = key
             }
@@ -257,7 +257,7 @@ class GetActionTests: XCTestCase {
         
         personalization.getActionsData(requestId: requestid, includeReporting: true, arrActionTypes: ["monetate:action:SocialProofDataV2"]).on(success: { (res) in
             
-            print("response", res.status, res.data?.toString)
+            print("response", res.status!, res.data!)
             if let key = res.status {
                 code = key
             }
@@ -270,9 +270,9 @@ class GetActionTests: XCTestCase {
     func testGetActionsBadging () {
         let exp = XCTestExpectation(description: "Testing testGetActions api ")
         var code = 400;
-        personalization.getActions(context: .ProductThumbnailView, requestId: "test_request_id", includeReporting: true, arrActionTypes: ["monetate:action:OmniChannelImageBadging"], event: ProductThumbnailView(products: Set(["PROD-278"]))).on(success: { (res) in
+        personalization.getActions(context: .ProductThumbnailView, requestId: "test_request_id", includeReporting: true, arrActionTypes: ["monetate:action:OmniChannelImageBadging"], event: ProductThumbnailView(products: Set(["BackP_010"]))).on(success: { (res) in
             
-            print("response", res.status, res.data?.toString)
+            print("response", res.status!, res.data!)
             if let key = res.status {
                 code = key
             }
