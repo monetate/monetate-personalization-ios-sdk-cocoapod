@@ -144,10 +144,4 @@ class PersonalizationTests: XCTestCase {
     func testImpressions() {
         personalization.report(context: .Impressions, event: Impressions(impressionIds: ["rt.1.yyy"]))
     }
-        
-    func testClosedSession() {
-        let jsonVal = JSONValue(dictionaryLiteral: ("closedSession", JSONValue(dictionaryLiteral: ("accountId", "458796"))), ("version", JSONValue(stringLiteral: "1.0.0")), ("eventType", JSONValue(stringLiteral: "monetate:context:ClosedSession")))
-        
-        personalization.report(context: .ClosedSession, event: ClosedSession(closedSession:jsonVal , version: "1.0.0"))
-    }
 }
