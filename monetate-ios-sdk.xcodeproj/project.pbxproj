@@ -31,7 +31,6 @@
 		1F157C8826B02FCC000D952B /* Language.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F157C5726B02FCC000D952B /* Language.swift */; };
 		1F157C8A26B02FCC000D952B /* Impressions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F157C5926B02FCC000D952B /* Impressions.swift */; };
 		1F157C8B26B02FCC000D952B /* PageEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F157C5A26B02FCC000D952B /* PageEvent.swift */; };
-		1F157C8C26B02FCC000D952B /* ProductView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F157C5B26B02FCC000D952B /* ProductView.swift */; };
 		1F157C8D26B02FCC000D952B /* DecisionRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F157C5C26B02FCC000D952B /* DecisionRequest.swift */; };
 		1F157C8E26B02FCC000D952B /* CartLine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F157C5D26B02FCC000D952B /* CartLine.swift */; };
 		1F157C8F26B02FCC000D952B /* CustomVariables.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F157C5E26B02FCC000D952B /* CustomVariables.swift */; };
@@ -110,7 +109,6 @@
 		1F157C5726B02FCC000D952B /* Language.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Language.swift; sourceTree = "<group>"; };
 		1F157C5926B02FCC000D952B /* Impressions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Impressions.swift; sourceTree = "<group>"; };
 		1F157C5A26B02FCC000D952B /* PageEvent.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PageEvent.swift; sourceTree = "<group>"; };
-		1F157C5B26B02FCC000D952B /* ProductView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ProductView.swift; sourceTree = "<group>"; };
 		1F157C5C26B02FCC000D952B /* DecisionRequest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DecisionRequest.swift; sourceTree = "<group>"; };
 		1F157C5D26B02FCC000D952B /* CartLine.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CartLine.swift; sourceTree = "<group>"; };
 		1F157C5E26B02FCC000D952B /* CustomVariables.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomVariables.swift; sourceTree = "<group>"; };
@@ -222,7 +220,6 @@
 				DFBB54B02872E6EB0005DBDF /* RecClicks.swift */,
 				DFBB54B22872E6FF0005DBDF /* RecImpressions.swift */,
 				1F157C5A26B02FCC000D952B /* PageEvent.swift */,
-				1F157C5B26B02FCC000D952B /* ProductView.swift */,
 				1F157C5C26B02FCC000D952B /* DecisionRequest.swift */,
 				1F157C5D26B02FCC000D952B /* CartLine.swift */,
 				1F157C5E26B02FCC000D952B /* CustomVariables.swift */,
@@ -523,7 +520,6 @@
 				1F157CA326B02FCC000D952B /* SwiftExtensions.swift in Sources */,
 				1F157C8226B02FCC000D952B /* Device.swift in Sources */,
 				1F157C8526B02FCC000D952B /* Referrer.swift in Sources */,
-				1F157C8C26B02FCC000D952B /* ProductView.swift in Sources */,
 				1F157C9D26B02FCC000D952B /* APIService.swift in Sources */,
 				1F157C8626B02FCC000D952B /* Metadata.swift in Sources */,
 				1F157C9126B02FCC000D952B /* EventTypeEnum.swift in Sources */,
