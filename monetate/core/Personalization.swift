@@ -279,8 +279,8 @@ public class Personalization {
             "channel":account.getChannel(),
             "sdkVersion": account.getSDKVersion(),
             "events": Utility.createEventBody(queue: self.queue)]
-        if let val = self.user.monetateId { body["monetateId"] = val }
-        if let val = self.user.deviceId { body["deviceId"] = val }
+        
+        if let val = self.user.deviceId { body["deviceId"] = val } else if let val = self.user.monetateId { body["monetateId"] = val }
         if let val = self.user.customerId { body["customerId"] = val }
         Log.debug("success - \(body.toString!)")
         
