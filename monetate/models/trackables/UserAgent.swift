@@ -27,7 +27,7 @@ public struct UserAgent: Context, Codable {
     public init(userAgent: String) {
         eventType = "monetate:context:UserAgent"
         self.userAgent = userAgent
-        try! checkUserAgent()
+       // try! checkUserAgent()
     }
     
     func checkUserAgent () throws {

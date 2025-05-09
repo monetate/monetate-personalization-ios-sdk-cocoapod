@@ -28,7 +28,7 @@ public struct IPAddress: Context,Codable {
     public init(ipAddress: String) {
         eventType = "monetate:context:IpAddress"
         self.ipAddress = ipAddress
-        try! checkIPAddress()
+       // try! checkIPAddress()
     }
     
     func checkIPAddress () throws {

@@ -87,6 +87,23 @@ extension JSONValue: ExpressibleByArrayLiteral {
     }
 }
 
+extension JSONValue {
+    var isEmpty: Bool {
+        switch self {
+        case .string(let value):
+            return value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        case .int(_), .double(_), .bool(_):
+            return false // These always have a value
+        case .object(let dict):
+            return dict.isEmpty
+        case .array(let array):
+            return array.isEmpty
+        case .null:
+            return true
+        }
+    }
+}
+
 fileprivate extension Optional {
     func or(_ other: Optional) -> Optional {
         switch self {

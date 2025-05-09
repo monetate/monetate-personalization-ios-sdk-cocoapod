@@ -27,7 +27,7 @@ public struct Language: Codable, Context {
     public init(language: String) {
         eventType = "monetate:context:Language"
         self.language = language
-        try! checkLanguage()
+       // try! checkLanguage()
     }
     
     func checkLanguage () throws {
