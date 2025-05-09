@@ -8,6 +8,50 @@
 
 import Foundation
 
+enum ValidationError: LocalizedError {
+    case missingIpAddress
+    case missingUserAgent
+    case missingScreenSize
+    case missingCustomVariable(index: Int)
+    case missingCoordinates
+    case missingMetaData
+    case missingPageEvent(index: Int)
+
+   
+    var errorDescription: String? {
+        switch self {
+            
+        case .missingIpAddress:
+            return "Execution Interrupted as data is missing, Please make sure if IpAddress data is added and then try again"
+            
+        case .missingUserAgent:
+            return "Execution Interrupted as data is missing, Please make sure if required UserAgent's data is added and then try again"
+            
+        case .missingScreenSize:
+            return "Execution Interrupted as data is missing, Please make sure if required ScreenSize's data is added and then try again"
+            
+        case .missingCustomVariable(let index):
+            if index == -1 {
+                return "Execution Interrupted as data is missing, Please make sure if required CustomVariable's data is added and then try again"
+            }
+            return "Execution Interrupted as data is missing, Please make sure if CustomVariable at index \(index) is valid then try again"
+            
+        case .missingCoordinates:
+            return "Execution Interrupted as data is missing, Please make sure if required Coordinates's data is added and then try again"
+            
+        case .missingMetaData:
+            return "Execution Interrupted as data is missing, Please make sure if required MetaData's data is added and then try again"
+            
+        case .missingPageEvent(let index):
+            if index == -1 {
+                return "Execution Interrupted as data is missing, Please make sure if required PageEvents data is added and then try again"
+            }
+            return "Execution Interrupted as data is missing, Please make sure if Page event at index \(index) is valid then try again."
+        }
+    }
+
+}
+
 // MARK: - New Context class
 public class ContextObj {
     
@@ -48,55 +92,85 @@ public class ContextObj {
     }
     
     // MARK: - IP Address
-    public func addIpAddress(_ ipAddress: String?) throws {
-        self.ipAddress = ipAddress
+    public func addIpAddress(_ ipAddress: String?) {
+        do {
+            try validateIpData(ipData: ipAddress)
+            self.ipAddress = ipAddress
+        } catch {
+            Log.error(error.localizedDescription)
+        }
     }
     
-    public func getIpAddress() -> IPAddress? {
+    public func getIpAddress() -> IPAddress {
         return IPAddress(ipAddress: self.ipAddress ?? "")
     }
     
     // MARK: - User Agent
-    public func addUserAgentData(_ data: String?) throws {
-        self.userAgentData = data
+    public func addUserAgentData(_ data: String?) {
+        do {
+            try validateUserAgentData(userAgent: data)
+            self.userAgentData = data
+        } catch {
+            Log.error(error.localizedDescription)
+        }
     }
     
-    public func getUserAgentData() -> UserAgent? {
+    public func getUserAgentData() -> UserAgent {
         return UserAgent(userAgent: self.userAgentData ?? "")
     }
     
     // MARK: - Screen Size
-    public func addScreenSizeData(screenHeight: Int?, screenWidth: Int?) throws {
-        self.screenHeight = screenHeight
-        self.screenWidth = screenWidth
+    public func addScreenSizeData(screenHeight: Int?, screenWidth: Int?) {
+        do {
+            try validateScreenSizeData(heightData: screenHeight, widthData: screenWidth)
+            self.screenHeight = screenHeight
+            self.screenWidth = screenWidth
+        } catch {
+            Log.error(error.localizedDescription)
+        }
     }
     
-    public func getScreenSizeData () -> ScreenSize? {
+    public func getScreenSizeData () -> ScreenSize {
         return ScreenSize(height: screenHeight ?? 0, width: screenWidth ?? 0)
     }
     
     // MARK: - Custom Variables
-    public func addCustomVariablesData(_ customVariables: [CustomVariablesModel]?) throws {
-        self.customVariables = customVariables
+    public func addCustomVariablesData(_ customVariables: [CustomVariablesModel]?) {
+        do {
+            try validateCustomVariables(customVariables)
+            self.customVariables = customVariables
+        } catch {
+            Log.error(error.localizedDescription)
+        }
     }
     
-    public func getCustomVariablesData() -> CustomVariables? {
+    public func getCustomVariablesData() -> CustomVariables {
         return CustomVariables(customVariables: self.customVariables ?? [])
     }
     
     // MARK: - Coordinates
-    public func addCoordinatesData(latitude: String?, longitude: String?) throws {
-        self.latitude = latitude
-        self.longitude = longitude
+    public func addCoordinatesData(latitude: String?, longitude: String?) {
+        do {
+            try validateCoordinatesData(latitudeData: latitude, longitudeData: longitude)
+            self.latitude = latitude
+            self.longitude = longitude
+        } catch {
+            Log.error(error.localizedDescription)
+        }
     }
     
-    public func getCoordinatesData() -> Coordinates? {
+    public func getCoordinatesData() -> Coordinates {
         return Coordinates(latitude: latitude ?? "", longitude: longitude ?? "")
     }
     
     // MARK: - Language / MetaData
-    public func addMetaData(language: Language?) throws {
-        self.language = language
+    public func addMetaData(language: Language?) {
+        do {
+            try validateMetaData(language)
+            self.language = language
+        } catch {
+            Log.error(error.localizedDescription)
+        }
     }
     
     public func getMetaData() -> Metadata {
@@ -104,11 +178,16 @@ public class ContextObj {
     }
     
     // MARK: - Page Events
-    public func addPageEventsData(_ pageEventsData: [String]?) throws {
-        self.pageEvents = pageEventsData
+    public func addPageEventsData(_ pageEventsData: [String]?) {
+        do {
+            try validatePageEventsData(pageEventsData)
+            self.pageEvents = pageEventsData
+        } catch {
+            Log.error(error.localizedDescription)
+        }
     }
     
-    public func getPageEventsData() -> PageEvents? {
+    public func getPageEventsData() -> PageEvents {
         return PageEvents(pageEvents: Set(self.pageEvents ?? []))
     }
     
@@ -191,3 +270,71 @@ public class ContextObj {
     }
     
 }
+
+//MARK: - Validations
+extension ContextObj {
+    // Validate IP address
+    func validateIpData(ipData: String?) throws {
+        guard let ip = ipData?.trimmingCharacters(in: .whitespacesAndNewlines), !ip.isEmpty else {
+            throw ValidationError.missingIpAddress
+        }
+    }
+
+    // Validate User Agent
+    func validateUserAgentData(userAgent: String?) throws {
+        guard let agent = userAgent?.trimmingCharacters(in: .whitespacesAndNewlines), !agent.isEmpty else {
+            throw ValidationError.missingUserAgent
+        }
+    }
+
+    // Validate Custom Variable
+    func validateCustomVariables(_ customVariables: [CustomVariablesModel]?) throws {
+        guard let customVariables = customVariables, !customVariables.isEmpty else {
+            throw ValidationError.missingCustomVariable(index: -1)
+        }
+
+        for (index, variable) in customVariables.enumerated() {
+            if variable.variable.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ||
+                variable.value.isEmpty {
+                throw ValidationError.missingCustomVariable(index: index)
+            }
+        }
+    }
+
+    // Validate Screen Size
+    func validateScreenSizeData(heightData: Int?, widthData: Int?) throws {
+        if heightData == nil || widthData == nil {
+            throw ValidationError.missingScreenSize
+        }
+    }
+
+    // Validate Coordinates
+    func validateCoordinatesData(latitudeData: String?, longitudeData: String?) throws {
+        guard let latitude = latitudeData?.trimmingCharacters(in: .whitespacesAndNewlines), !latitude.isEmpty,
+              let longitude = longitudeData?.trimmingCharacters(in: .whitespacesAndNewlines), !longitude.isEmpty
+        else {
+            throw ValidationError.missingCoordinates
+        }
+    }
+
+    // Validate Meta data
+    func validateMetaData(_ language: Language?) throws {
+        guard let lang = language?.language.trimmingCharacters(in: .whitespacesAndNewlines), !lang.isEmpty else {
+            throw ValidationError.missingMetaData
+        }
+    }
+
+    // Validate Page Events
+    func validatePageEventsData(_ pageEvents: [String]?) throws {
+        guard let events = pageEvents, !events.isEmpty else {
+            throw ValidationError.missingPageEvent(index: -1)
+        }
+
+        for (index, event) in events.enumerated() {
+            if event.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                throw ValidationError.missingPageEvent(index: index)
+            }
+        }
+    }
+}
+

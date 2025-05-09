@@ -29,7 +29,7 @@ public class ScreenSize : Context,Codable {
         eventType = "monetate:context:ScreenSize"
         self.height = height
         self.width = width
-        try! checkScreenSize()
+        //try! checkScreenSize()
     }
     
     func checkScreenSize () throws {

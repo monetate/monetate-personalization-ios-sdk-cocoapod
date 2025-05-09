@@ -20,7 +20,7 @@ public class PageEvents: Codable, MEvent {
     public init(pageEvents: Set<String>) {
         eventType = "monetate:record:PageEvents"
         self.pageEvents = pageEvents
-        try! checkPageEvents()
+        //try! checkPageEvents()
     }
     
     func checkPageEvents () throws {
