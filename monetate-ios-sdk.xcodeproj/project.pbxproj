@@ -66,6 +66,7 @@
 		228CF1822125CEE100D3E188 /* Monetate.plist in Resources */ = {isa = PBXBuildFile; fileRef = 228CF1812125CEE100D3E188 /* Monetate.plist */; };
 		22E0FACD210B68D3002E6B93 /* Monetate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 22E0FAC3210B68D3002E6B93 /* Monetate.framework */; };
 		22E0FAD4210B68D3002E6B93 /* monetate_ios_sdk.h in Headers */ = {isa = PBXBuildFile; fileRef = 22E0FAC6210B68D3002E6B93 /* monetate_ios_sdk.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		3E8CF1F42DC4E4760013DCAF /* ContextObj.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E8CF1F32DC4E4760013DCAF /* ContextObj.swift */; };
 		46746A872AD6D388001C6A8B /* CoordinatesTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46746A862AD6D388001C6A8B /* CoordinatesTest.swift */; };
 		46746A892AD83214001C6A8B /* ReferrerTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46746A882AD83214001C6A8B /* ReferrerTest.swift */; };
 		46746A8B2AD98B55001C6A8B /* LanguageTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46746A8A2AD98B55001C6A8B /* LanguageTest.swift */; };
@@ -150,6 +151,7 @@
 		22E0FAC7210B68D3002E6B93 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		22E0FACC210B68D3002E6B93 /* monetate-ios-sdkTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "monetate-ios-sdkTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		22E0FAD3210B68D3002E6B93 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		3E8CF1F32DC4E4760013DCAF /* ContextObj.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ContextObj.swift; sourceTree = "<group>"; };
 		46746A862AD6D388001C6A8B /* CoordinatesTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoordinatesTest.swift; sourceTree = "<group>"; };
 		46746A882AD83214001C6A8B /* ReferrerTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferrerTest.swift; sourceTree = "<group>"; };
 		46746A8A2AD98B55001C6A8B /* LanguageTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LanguageTest.swift; sourceTree = "<group>"; };
@@ -212,6 +214,7 @@
 		1F157C5326B02FCC000D952B /* models */ = {
 			isa = PBXGroup;
 			children = (
+				3E8CF1F32DC4E4760013DCAF /* ContextObj.swift */,
 				1F157C5426B02FCC000D952B /* Referrer.swift */,
 				1F157C5526B02FCC000D952B /* Metadata.swift */,
 				1F157C5626B02FCC000D952B /* JSONValue.swift */,
@@ -519,6 +522,7 @@
 				1F157C8126B02FCC000D952B /* UserID.swift in Sources */,
 				1F157CA326B02FCC000D952B /* SwiftExtensions.swift in Sources */,
 				1F157C8226B02FCC000D952B /* Device.swift in Sources */,
+				3E8CF1F42DC4E4760013DCAF /* ContextObj.swift in Sources */,
 				1F157C8526B02FCC000D952B /* Referrer.swift in Sources */,
 				1F157C9D26B02FCC000D952B /* APIService.swift in Sources */,
 				1F157C8626B02FCC000D952B /* Metadata.swift in Sources */,
