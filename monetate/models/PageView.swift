@@ -39,7 +39,7 @@ public struct PageView: Codable,Context {
         self.url = url
         self.categories = categories
         self.breadcrumbs = breadcrumbs
-        try! checkPageType()
+        //try! checkPageType()
     }
     
     func checkPageType () throws {

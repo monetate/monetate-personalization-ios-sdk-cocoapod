@@ -42,7 +42,7 @@ public class AddToCart: Codable, MEvent {
     }
 }
 
-public struct CartLine: Codable {
+public struct CartLine: Codable, Equatable {
     
     
     /** The unique identifier for the product. */
@@ -62,7 +62,11 @@ public struct CartLine: Codable {
         self.quantity = quantity
         self.currency = currency
         self.value = value
-        try! checkCartLineItem()
+       // try! checkCartLineItem()
+    }
+    
+    public static func == (lhs: CartLine, rhs: CartLine) -> Bool {
+        return lhs.sku == rhs.sku && lhs.pid == rhs.pid
     }
     
     func serialize () -> NSDictionary {
