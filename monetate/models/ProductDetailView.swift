@@ -35,7 +35,7 @@ public struct Product: Codable {
     public init(productId: String, sku: String) {
         self.productId = productId
         self.sku = sku
-        try! checkProduct()
+       // try! checkProduct()
     }
     
     func checkProduct () throws {

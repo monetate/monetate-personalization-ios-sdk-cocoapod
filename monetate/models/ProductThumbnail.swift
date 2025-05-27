@@ -18,7 +18,7 @@ public class ProductThumbnailView: Codable, MEvent {
     public init(products: Set<String>) {
         eventType = "monetate:context:ProductThumbnailView"
         self.products = products
-        try! checkProducs()
+       // try! checkProducs()
     }
     
     func checkProducs () throws {

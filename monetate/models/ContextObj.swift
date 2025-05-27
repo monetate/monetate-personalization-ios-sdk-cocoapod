@@ -16,6 +16,12 @@ enum ValidationError: LocalizedError {
     case missingCoordinates
     case missingMetaData
     case missingPageEvent(index: Int)
+    case missingPageType
+    case missingProductThumbnail(index: Int)
+    case missingProductDetails(index: Int)
+    case missingPurchaseData(index: Int)
+    case missingCartData(index: Int)
+    case missingSingleCartData
 
    
     var errorDescription: String? {
@@ -47,6 +53,36 @@ enum ValidationError: LocalizedError {
                 return "Execution Interrupted as data is missing, Please make sure if required PageEvents data is added and then try again"
             }
             return "Execution Interrupted as data is missing, Please make sure if Page event at index \(index) is valid then try again."
+            
+        case .missingPageType:
+            return "Execution Interuppted as data is missing, Please make sure if required PageDetails are is added and then try again"
+            
+        case .missingProductThumbnail(let index):
+            if index == -1 {
+                return "Execution Interuppted as data is missing, Please make sure if required ProductThumbnail's data is added and then try again"
+            }
+            return "Execution Interuppted as data is missing, Please make sure if ProductThumbnail at index \(index)  is valid then try again"
+            
+        case .missingProductDetails(let index):
+            if (index == -1) {
+                return "Execution Interuppted as data is missing, Please make sure if required ProductDetails data are added and then try again"
+            }
+            return "Execution Interuppted as data is missing, Please make sure if ProductDetail at index \(index) is valid then try again"
+            
+        case .missingPurchaseData(let index):
+            if (index == -1) {
+                return "Execution Interuppted as data is missing, Please make sure if required Purchase's data is added and then try again"
+            }
+            return "Execution Interuppted as data is missing, Please make sure if Purchase's data at index \(index) is valid then try again"
+            
+        case .missingCartData(index: let index):
+            if (index == -1) {
+                return "Execution Interuppted as data is missing, Please make sure if required Cart's data is added and then try again"
+            }
+            return "Execution Interuppted as data is missing, Please make sure if Cart's data at index \(index) is valid then try again"
+            
+        case .missingSingleCartData:
+            return "Execution Interuppted as data is missing, Please make sure if required CartLine's data is added and then try again"
         }
     }
 
@@ -192,74 +228,116 @@ public class ContextObj {
     }
     
     // MARK: - Page View
-    public func addPageDetails(pageType: String?, url: String?, categories: [String]?, breadcrumbs: [String]?, path: String?) throws {
-        self.pageType = pageType
-        self.url = url
-        self.categories = categories
-        self.breadcrumbs = breadcrumbs
-        self.path = path
+    public func addPageDetails(pageType: String?, url: String?, categories: [String]?, breadcrumbs: [String]?, path: String?) {
+        do {
+            try validatePageViewData(pageType: pageType, url: url, categories: categories, breadcrumbs: breadcrumbs, path: path)
+            self.pageType = pageType
+            self.url = url
+            self.categories = categories
+            self.breadcrumbs = breadcrumbs
+            self.path = path
+        } catch {
+            Log.error(error.localizedDescription)
+        }
     }
     
-    public func getPageViewData() -> PageView? {
+    public func getPageDetails() -> PageView {
         return PageView(pageType: pageType ?? "", path: path, url: url, categories: categories, breadcrumbs: breadcrumbs)
     }
     
     // MARK: - Product Thumbnails
-    public func addProductThumbnails(_ products: [String]?) throws {
-        self.productsThumbnail = products
+    public func addProductThumbnailsData(_ products: [String]?) {
+        do {
+            try validateProductThumbnailData(productsData: products)
+            self.productsThumbnail = products
+        } catch {
+            Log.error(error.localizedDescription)
+        }
     }
     
-    public func getProductThumbnailData() -> ProductThumbnailView? {
+    public func getProductThumbnailsData() -> ProductThumbnailView {
         return ProductThumbnailView(products: Set(self.productsThumbnail ?? []))
     }
     
     // MARK: - Product Details
-    public func addProductDetails(_ productsData: [Product]?) throws {
-        self.productsData = productsData
+    public func addProductDetails(_ productsData: [Product]?) {
+        do {
+            try validateProductDetails(productsData)
+            self.productsData = productsData
+        } catch {
+            Log.error(error.localizedDescription)
+        }
     }
     
-    public func getProductDetailViewData() -> ProductDetailView? {
+    public func getProductDetails() -> ProductDetailView {
         return ProductDetailView(products: productsData)
     }
     
     // MARK: - Purchase
-    public func addAllPurchaseData(purchaseId: String?, purchaseLineData: [PurchaseLine]?) throws {
-        self.purchaseId = purchaseId
-        self.purchaseData = purchaseLineData
+    public func addPurchaseData(purchaseId: String?, purchaseLineData: [PurchaseLine]?) {
+        do {
+            try validatePurchaseData(purchaseId: purchaseId, purchaseLines: purchaseLineData)
+            self.purchaseId = purchaseId
+            self.purchaseData = purchaseLineData
+        } catch {
+            Log.error(error.localizedDescription)
+        }
     }
     
-    public func getPurchaseData() -> Purchase? {
+    public func getPurchaseData() -> Purchase {
         return Purchase(account: "", domain: "", instance: "", purchaseId: purchaseId ?? "", purchaseLines: purchaseData)
     }
     
     // MARK: - Cart
-    public func addAllCartData(_ cartLines: [CartLine]?) throws {
-        self.cartLines = cartLines
+    public func addAllCartData(_ cartLines: [CartLine]?) {
+        do {
+            try validateCartData(cartLines)
+            if self.cartLines == nil {
+                self.cartLines = cartLines
+            } else if let newLines = cartLines {
+                self.cartLines?.append(contentsOf: newLines)
+            }
+        } catch {
+            Log.error(error.localizedDescription)
+        }
     }
     
     public func getAllCartData() -> [CartLine] {
         return cartLines ?? []
     }
     
-    public func addSingleCartData(_ cartLine: CartLine?) throws {
-        if let line = cartLine {
-            cartLines?.append(line)
-            singleCartData = line
+    // MARK: - Single Cart
+    public func addSingleCartData(_ cartLine: CartLine?) {
+        do {
+            try validateSingleCartData(cartLine)
+            if let line = cartLine {
+                if cartLines == nil {
+                    cartLines = []
+                }
+                cartLines?.append(line)
+                singleCartData = line
+            }
+        } catch {
+            Log.error(error.localizedDescription)
         }
     }
     
-    public func getAddToCartData() -> CartLine? {
+    public func getSingleCartData() -> CartLine? {
         return singleCartData
     }
     
-    public func removeSingleCartLine(_ cartLine: CartLine) {
-        if let index = cartLines?.firstIndex(where: { $0.sku == cartLine.sku && $0.pid == cartLine.pid }) {
-            cartLines?.remove(at: index)
+    public func removeSingleCartData(_ cartLine: CartLine) {
+        guard let cartLines = cartLines, !cartLines.isEmpty else {
+            Log.warning("Cart is empty, cannot remove item.")
+            return
+        }
+        
+        if let index = cartLines.firstIndex(where: { $0 == cartLine }) {
+            self.cartLines?.remove(at: index)
         } else {
-            Log.warning("Cart is already empty, cannot remove data")
+            Log.warning("Item not found in cart, cannot remove.")
         }
     }
-    
     
     public func clearAllCartData() {
         if let cartLine = self.cartLines, !cartLine.isEmpty {
@@ -334,6 +412,86 @@ extension ContextObj {
             if event.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                 throw ValidationError.missingPageEvent(index: index)
             }
+        }
+    }
+    
+    // Validate PageView
+    func validatePageViewData(pageType: String?, url: String?, categories: [String]?, breadcrumbs: [String]?, path: String?) throws {
+        guard let pageType = pageType, !pageType.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            throw ValidationError.missingPageType
+        }
+    }
+    
+    // Validate Productthumbnail data
+    func validateProductThumbnailData(productsData: [String]?) throws {
+        guard let products = productsData, !products.isEmpty else {
+            throw ValidationError.missingProductThumbnail(index: -1)
+        }
+
+        for (index, product) in products.enumerated() {
+            if product.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                throw ValidationError.missingProductThumbnail(index: index)
+            }
+        }
+    }
+    
+    // Validate Product details
+    func validateProductDetails(_ productsData: [Product]?) throws {
+        guard let products = productsData, !products.isEmpty else {
+            throw ValidationError.missingProductDetails(index: -1)
+        }
+
+        for (index, product) in products.enumerated() {
+            if product.productId.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                throw ValidationError.missingProductDetails(index: index)
+            }
+        }
+    }
+    
+    //validate Purchase data
+    func validatePurchaseData(purchaseId: String?, purchaseLines: [PurchaseLine]?) throws {
+        guard let purchaseId = purchaseId, !purchaseId.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty, let purchaseLines = purchaseLines, !purchaseLines.isEmpty else {
+            throw ValidationError.missingPurchaseData(index: -1)
+        }
+        for (index, purchaseLine) in purchaseLines.enumerated() {
+            if purchaseLine.sku.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ||
+                purchaseLine.pid.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ||
+                purchaseLine.quantity <= 0 ||
+                purchaseLine.currency.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ||
+                purchaseLine.value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty  {
+                throw ValidationError.missingPurchaseData(index: index)
+            }
+        }
+    }
+    
+    //validate Cart data
+    func validateCartData(_ cartLinesData: [CartLine]?) throws {
+        guard let cartLines = cartLinesData, !cartLines.isEmpty else {
+            throw ValidationError.missingCartData(index: -1)
+        }
+
+        for (index, cartLine) in cartLines.enumerated() {
+            if cartLine.sku.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ||
+                cartLine.pid.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ||
+                cartLine.quantity <= 0 ||
+                cartLine.currency.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ||
+                cartLine.value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                throw ValidationError.missingCartData(index: index)
+            }
+        }
+    }
+    
+    //validate Single cart data
+    func validateSingleCartData(_ cartLine: CartLine?) throws {
+        guard
+            let cartLine = cartLine,
+            !cartLine.sku.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+            !cartLine.pid.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+            cartLine.quantity > 0,
+            !cartLine.currency.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+            !cartLine.value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        else {
+            throw ValidationError.missingSingleCartData
         }
     }
 }

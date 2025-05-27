@@ -32,7 +32,7 @@ public class Purchase: Codable, MEvent {
         self.instance = instance
         self.purchaseId = purchaseId
         self.purchaseLines = purchaseLines
-        try! checkPurchase()
+       // try! checkPurchase()
     }
     
     func checkPurchase () throws {
@@ -76,7 +76,7 @@ public struct PurchaseLine: Codable {
         self.quantity = quantity
         self.currency = currency
         self.value = value
-        try! checkPurchaseLineItem()
+       // try! checkPurchaseLineItem()
     }
     
     func checkPurchaseLineItem () throws {
