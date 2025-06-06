@@ -314,6 +314,40 @@ public class Personalization {
     }
 }
 
+// MARK: - New individual Report methodes
+extension Personalization {
+    /**
+     * Used to report PageEvents data
+     * - Parameter contextData: Context object that contains the PageEvents data
+     */
+    public func reportPageEvents(contextData: ContextObj) {
+        let pageEventsData = contextData.getPageEventsData()
+        report(context: .PageEvents, event: pageEventsData)
+    }
+    
+    /**
+     * Used to report Cart data
+     * - Parameter contextData: Context object  that contains the Cart data
+     */
+    public func reportCartData(contextData: ContextObj) {
+        let cartLines = contextData.getAllCartData()
+        let cart = Cart(cartLines: cartLines)
+        report(context: .Cart, event: cart)
+    }
+    
+    /**
+     * Used to report Single Cart data
+     * - Parameter contextData: Context object  that contains the AddToCart data
+     */
+    public func reportAddToCartData(contextData: ContextObj) {
+        if let cartLine = contextData.getSingleCartData() {
+            let cartLines = [cartLine]
+            let addToCart = AddToCart(cartLines: cartLines)
+            report(context: .AddToCart, event: addToCart)
+        }
+    }
+}
+
 extension Date {
     func toMillis() -> Int64! {
         return Int64(self.timeIntervalSince1970 * 1000)
