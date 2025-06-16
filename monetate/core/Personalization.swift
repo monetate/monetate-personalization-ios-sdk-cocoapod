@@ -346,6 +346,34 @@ extension Personalization {
             report(context: .AddToCart, event: addToCart)
         }
     }
+    
+    /**
+     Used to report Purchase data
+     - Parameter contextData: Context object that contains the Purchase data
+     */
+    public func reportPurchaseData(contextData: ContextObj) {
+        let purchaseData = contextData.getPurchaseData()
+        report(context: .Purchase, event: purchaseData)
+    }
+
+    /**
+     Used to report PageDetails data
+     - Parameter contextData: Context object that contains the PageDetails data
+     */
+    public func reportPageDetails(contextData: ContextObj) {
+        let pageView = contextData.getPageDetails()
+        report(context: .PageView, event: pageView)
+    }
+
+    /**
+     Used to report ProductDetails data
+     - Parameter contextData: Context object that contains the ProductDetails data
+     */
+    public func reportProductDetails(contextData: ContextObj) {
+        let productDetailView = contextData.getProductDetails()
+        report(context: .ProductDetailView, event: productDetailView)
+    }
+    
 }
 
 extension Date {
