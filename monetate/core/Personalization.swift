@@ -374,6 +374,42 @@ extension Personalization {
         report(context: .ProductDetailView, event: productDetailView)
     }
     
+    /**
+     Used to report ProductThumbnailData
+     - Parameter contextData: Context object that contains the ProductThumbnailData
+     */
+    public func reportProductThumbnailData(contextData: ContextObj) {
+        let productThumbnailView = contextData.getProductThumbnailsData()
+        report(context: .ProductThumbnailView, event: productThumbnailView)
+    }
+
+    /**
+     Used to report Impressions data
+     - Parameter ids: An array of id Strings to be processed
+     */
+    public func reportImpressionsData(ids: [String]) {
+        let impressions = Impressions(impressionIds: ids)
+        report(context: .Impressions, event: impressions)
+    }
+
+    /**
+     Used to report RecImpressions data
+     - Parameter tokens: An array of token Strings to be processed
+     */
+    public func reportRecImpressionsData(tokens: [String]) {
+        let recImpressions = RecImpressions(recImpressions: tokens)
+        report(context: .RecImpressions, event: recImpressions)
+    }
+
+    /**
+     Used to report RecClicks data
+     - Parameter tokens: An array of token Strings to be processed
+     */
+    public func reportRecClicksData(tokens: [String]) {
+        let recClicks = RecClicks(recClicks: tokens)
+        report(context: .RecClicks, event: recClicks)
+    }
+    
 }
 
 extension Date {
