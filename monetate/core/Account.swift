@@ -44,6 +44,10 @@ public struct Account:Codable {
     func getShortName () -> String {
         return self.shortname
     }
+    
+    func getDomain () -> String {
+        return self.domain
+    }
 }
 
 enum AccountError : Error {
