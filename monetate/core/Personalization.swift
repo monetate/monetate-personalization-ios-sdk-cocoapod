@@ -15,6 +15,8 @@ public class Personalization {
     private var user: User
     public var timer: ScheduleTimer?
     
+    private var searchPrerequisite: SearchPreRequisite?
+    
     //constructor
     
     public init (account: Account, user: User) {
@@ -410,6 +412,155 @@ extension Personalization {
         report(context: .RecClicks, event: recClicks)
     }
     
+}
+
+// MARK: - Search Feature Module
+extension Personalization {
+    
+    /**
+     Performs a search query and fetches results asynchronously.
+     
+     - Parameter searchTerm: The search query string. Must be non-empty string.
+     - Parameter limit: Maximum number of results to return. Defaults to 10.
+     
+     - Returns: A `Future` containing an `APIResponse` with search results or an error.
+     */
+    public func fetchSearchResults(
+        searchTerm: String,
+        limit: Int = 10) -> Future<APIResponse, Error> {
+            let promise = Promise<APIResponse, Error>()
+            let prerequisiteFuture: Future<SearchPreRequisite, Error>
+            
+            // Validate input: trimmed non-empty, limit greater than zero
+            guard !searchTerm.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+                let error = SearchError.invalidInput
+                Log.error(error.localizedDescription)
+                promise.fail(error: error)
+                return promise.future
+            }
+            if let obtPreRequisite = self.searchPrerequisite {
+                // Wrap the cached prerequisite in an already succeeded future
+                prerequisiteFuture = Future(value: obtPreRequisite)
+            } else {
+                prerequisiteFuture = fetchSearchPrerequisiteData()
+            }
+            
+            //Obtain prerequisite parameters
+            prerequisiteFuture
+                .on(
+                    success: { [weak self] preRequisite in
+                        self?.searchPrerequisite = preRequisite
+                        print("Search Prerequisite → Token: \(preRequisite.searchToken), Channel: \(preRequisite.channelData)")
+                    },
+                    failure: { err in
+                        Log.error(err.localizedDescription)
+                        promise.fail(error: err)
+                    })
+            
+            return promise.future
+        }
+    
+    /**
+     Fetches prerequisites required from getActionsData before executing a search operation and keep for reuse.
+     - Returns: The search-related prerequisite data needed by the calling process or error.
+     */
+    private func fetchSearchPrerequisiteData() -> Future<SearchPreRequisite, Error> {
+        let requestId = String(Int.random(in: 0...2147483647))
+        let promise = Promise<SearchPreRequisite, Error>()
+       
+
+            let future = self.getActionsData(
+                requestId: requestId,
+                includeReporting: false,
+                arrActionTypes: [ContextEnum.search.rawValue]
+            )
+            
+            future
+                .on(success: { [weak self] responseData in
+                    guard let self = self else {
+                        let error = SearchError.prerequisiteFetchFailed
+                        promise.fail(error: error)
+                        return
+                    }
+                    
+                    do {
+                        let searchPrerequisite = try self.extractSearchPreRequestInfo(from: responseData)
+                        promise.succeed(value: searchPrerequisite)
+                    } catch {
+                        let err = (error as? SearchError) ?? SearchError.prerequisiteFetchFailed
+                        promise.fail(error: err)
+                    }
+                },
+                    failure: { error in
+                    promise.fail(error: error)
+                }
+                )
+            return promise.future
+    }
+    
+    /**
+     Extracts and validates search prerequisites from the given API response.
+     
+     This method parses the raw `APIResponse`, converts it to a strongly-typed `ExperienceDataResponse`,
+     and extracts the required `SearchPreRequestInfo` needed to perform a search operation.
+     
+     - Parameter responseData: The raw response data returned from the `getActionsData` API call.
+     
+     - Returns: A `SearchPreRequestInfo` object containing validated and extracted value  `searchToken` value.
+     
+     - Throws:
+     - `SearchError.invalidInput` if the response cannot be parsed into valid JSON.
+     - `SearchError.noActionsFound` if no action data is found in the response.
+     - `SearchError.noSearchActionFound` if no search action is present among the actions.
+     - `SearchError.missingActionProperties` if required properties `searchToken` property are missing.
+     - `SearchError.prerequisiteFetchFailed` as a fallback for any other decoding or logic failures.
+     */
+    
+    private func extractSearchPreRequestInfo(from responseData: APIResponse) throws -> SearchPreRequisite {
+        let jsonData: Data
+        
+        // Attempt to convert data to JSON
+        if let data = responseData.data as? Data {
+            jsonData = data
+        } else if let dict = responseData.data as? [String: Any] {
+            jsonData = try JSONSerialization.data(withJSONObject: dict, options: [])
+        } else {
+            let error = SearchError.invalidInput
+            throw error
+        }
+        
+        // Decode to structured object
+        let decoder = JSONDecoder()
+        let root = try decoder.decode(ExperienceDataResponse.self, from: jsonData)
+        
+        // Get actions
+        guard
+            let responses = root.data?.experienceResponses,
+            let firstResponse = responses.first,
+            let actions = firstResponse.experienceActions,
+            !actions.isEmpty
+        else {
+            let error = SearchError.noActionsFound
+            throw error
+        }
+        
+        // Get search action
+        guard let searchAction = actions.first(where: { $0.actionType == ContextEnum.search.rawValue }) else {
+            let error = SearchError.noSearchActionFound(domain: account.getDomain())
+            throw error
+        }
+        
+        //Get search token
+        guard let searchToken = searchAction.searchToken
+        else {
+            let error = SearchError.missingActionProperties
+            throw error
+        }
+        //Get channel
+        let channel = account.getChannel()
+        
+        return SearchPreRequisite(searchToken: searchToken, channelData: channel)
+    }
 }
 
 extension Date {
