@@ -8,6 +8,10 @@
 
 import Foundation
 
+enum TypeOfRequest: String, Codable {
+    case search = "SEARCH"
+}
+
 enum Method:String {
     case GET
     case POST

@@ -37,6 +37,15 @@ public class Personalization {
         return token
     }
     
+    /**
+     generate a requestId of type String, which is further been used for making decision based call
+
+     - Returns: A new unique request ID as a String.
+     */
+    private func generateRequestId() -> String {
+        return UUID().uuidString
+    }
+    
     private var queue: [ContextEnum: MEvent] = [:]
     private var errorQueue: [MError] = []
     
@@ -449,8 +458,24 @@ extension Personalization {
             prerequisiteFuture
                 .on(
                     success: { [weak self] preRequisite in
-                        self?.searchPrerequisite = preRequisite
-                        print("Search Prerequisite → Token: \(preRequisite.searchToken), Channel: \(preRequisite.channelData)")
+                        
+                        guard let self = self else {
+                            let error = SearchError.configurationFailed
+                            Log.error(error.localizedDescription)
+                            promise.fail(error: error)
+                            return
+                        }
+                        
+                        self.searchPrerequisite = preRequisite
+                        self.fetchSearchData(searchTerm: searchTerm, limit: limit)
+                            .on(
+                                success: { apiResponse in
+                                    
+                                },
+                                failure: { err in
+                                    Log.error(err.localizedDescription)
+                                    promise.fail(error: err)
+                                })
                     },
                     failure: { err in
                         Log.error(err.localizedDescription)
@@ -465,20 +490,20 @@ extension Personalization {
      - Returns: The search-related prerequisite data needed by the calling process or error.
      */
     private func fetchSearchPrerequisiteData() -> Future<SearchPreRequisite, Error> {
-        let requestId = String(Int.random(in: 0...2147483647))
+        let requestId = generateRequestId()
         let promise = Promise<SearchPreRequisite, Error>()
-       
-
-            let future = self.getActionsData(
-                requestId: requestId,
-                includeReporting: false,
-                arrActionTypes: [ContextEnum.search.rawValue]
-            )
-            
-            future
-                .on(success: { [weak self] responseData in
+        
+        let future = self.getActionsData(
+            requestId: requestId,
+            includeReporting: false,
+            arrActionTypes: [ContextEnum.search.rawValue]
+        )
+        
+        future
+            .on(
+                success: { [weak self] responseData in
                     guard let self = self else {
-                        let error = SearchError.prerequisiteFetchFailed
+                        let error = SearchError.configurationFailed
                         promise.fail(error: error)
                         return
                     }
@@ -487,17 +512,17 @@ extension Personalization {
                         let searchPrerequisite = try self.extractSearchPreRequestInfo(from: responseData)
                         promise.succeed(value: searchPrerequisite)
                     } catch {
-                        let err = (error as? SearchError) ?? SearchError.prerequisiteFetchFailed
+                        let err = (error as? SearchError) ?? error
                         promise.fail(error: err)
                     }
                 },
-                    failure: { error in
+                failure: { error in
                     promise.fail(error: error)
                 }
-                )
-            return promise.future
+            )
+        return promise.future
     }
-    
+
     /**
      Extracts and validates search prerequisites from the given API response.
      
@@ -506,14 +531,15 @@ extension Personalization {
      
      - Parameter responseData: The raw response data returned from the `getActionsData` API call.
      
-     - Returns: A `SearchPreRequestInfo` object containing validated and extracted value  `searchToken` value.
+     - Returns: A `SearchPreRequestInfo` object containing validated and extracted value  `searchToken`, or nil if missing and `channel` data.
      
      - Throws:
-     - `SearchError.invalidInput` if the response cannot be parsed into valid JSON.
+     - `SearchError.fetchFailed` if the response cannot be parsed into valid JSON.
+     
+     - Warning:
      - `SearchError.noActionsFound` if no action data is found in the response.
      - `SearchError.noSearchActionFound` if no search action is present among the actions.
-     - `SearchError.missingActionProperties` if required properties `searchToken` property are missing.
-     - `SearchError.prerequisiteFetchFailed` as a fallback for any other decoding or logic failures.
+     - `SearchError.missingActionProperties` if required properties `searchToken` property is missing.
      */
     
     private func extractSearchPreRequestInfo(from responseData: APIResponse) throws -> SearchPreRequisite {
@@ -525,41 +551,90 @@ extension Personalization {
         } else if let dict = responseData.data as? [String: Any] {
             jsonData = try JSONSerialization.data(withJSONObject: dict, options: [])
         } else {
-            let error = SearchError.invalidInput
-            throw error
+            throw SearchError.fetchFailed
         }
         
         // Decode to structured object
         let decoder = JSONDecoder()
         let root = try decoder.decode(ExperienceDataResponse.self, from: jsonData)
         
-        // Get actions
-        guard
+        // Extract channel data
+        let channel = account.getChannel()
+        
+        var searchToken: String? = nil
+        
+        // Try to get actions and searchToken, log warnings on missing data
+        if
             let responses = root.data?.experienceResponses,
             let firstResponse = responses.first,
             let actions = firstResponse.experienceActions,
             !actions.isEmpty
-        else {
-            let error = SearchError.noActionsFound
-            throw error
+        {
+            if let searchAction = actions.first(where: { $0.actionType == ContextEnum.search.rawValue }) {
+                if let token = searchAction.searchToken {
+                    searchToken = token
+                } else {
+                    Log.warning(SearchError.missingActionProperties.localizedDescription)
+                }
+            } else {
+                Log.warning(SearchError.noSearchActionFound(domain: account.getDomain()).localizedDescription)
+            }
+        } else {
+            Log.warning(SearchError.noActionsFound.localizedDescription)
         }
-        
-        // Get search action
-        guard let searchAction = actions.first(where: { $0.actionType == ContextEnum.search.rawValue }) else {
-            let error = SearchError.noSearchActionFound(domain: account.getDomain())
-            throw error
-        }
-        
-        //Get search token
-        guard let searchToken = searchAction.searchToken
-        else {
-            let error = SearchError.missingActionProperties
-            throw error
-        }
-        //Get channel
-        let channel = account.getChannel()
         
         return SearchPreRequisite(searchToken: searchToken, channelData: channel)
+    }
+
+    
+    /**
+     Fetches search data asynchronously using the provided search term and result limit.
+     
+     This function builds a `SearchRequest` body and returns a `Future` that will
+     eventually hold the API response or an error if request creation fails.
+     
+     - Parameters:
+       - searchTerm: The string term to search for.
+       - limit: The maximum number of results to return.
+     
+     - Returns: A `Future` containing an `APIResponse` or an `Error`.
+     */
+    private func fetchSearchData(
+        searchTerm: String,
+        limit: Int
+    ) -> Future<APIResponse, Error> {
+        let promise = Promise<APIResponse, Error>()
+        
+        do {
+            let body = createSearchBody(searchTerm: searchTerm, limit: limit, searchToken: self.searchPrerequisite?.searchToken)
+            let jsonData = try JSONSerialization.data(withJSONObject: body.toDictionary(), options: .prettyPrinted)
+               if let jsonString = String(data: jsonData, encoding: .utf8) {
+                   print(jsonString)
+               }
+        } catch {
+            promise.fail(error: error)
+        }
+        return promise.future
+    }
+
+    /**
+     Creates a `SearchRequest` object configured with the given search term, result limit, and search token.
+
+     This method constructs the necessary query components including the query term, record settings,
+     and a unique record query, and wraps them into a `SearchRequest` which can be used to perform a search.
+
+     - Parameters:
+       - searchTerm: The string term to be searched.
+       - limit: The maximum number of results to return.
+       - searchToken: A token to identify or track the search session.
+
+     - Returns: A fully formed `SearchRequest` ready for use in a search operation.
+     */
+    private func createSearchBody(searchTerm: String, limit: Int, searchToken: String?) -> SearchRequest {
+        let queryTerm = SearchRequest.QueryTerm(term: searchTerm)
+        let settings = SearchRequest.RecordSettings(query: queryTerm, limit: limit)
+        let recordQuery = SearchRequest.RecordQuery(id: generateRequestId(), typeOfRequest: .search, settings: settings)
+        return SearchRequest(recordQueries: [recordQuery], suggestions: [], searchToken: searchToken)
     }
 }
 
@@ -572,3 +647,15 @@ extension Date {
         self.addTimeInterval(TimeInterval(Double(millis % 1000) / 1000 ))
     }
 }
+
+extension Encodable {
+    func toDictionary() throws -> [String: Any] {
+        let data = try JSONEncoder().encode(self)
+        let jsonObject = try JSONSerialization.jsonObject(with: data, options: [])
+        guard let dictionary = jsonObject as? [String: Any] else {
+            throw NSError(domain: "ENCODING", code: 0, userInfo: [NSLocalizedDescriptionKey: "Failed to cast JSON to dictionary"])
+        }
+        return dictionary
+    }
+}
+
