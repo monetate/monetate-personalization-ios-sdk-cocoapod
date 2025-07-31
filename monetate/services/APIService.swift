@@ -20,32 +20,62 @@ enum Method:String {
 }
 
 class Service {
-    static func getDecision (url: String, body: [String: Any]?, headers: [String: String]?, success: @escaping (Data, Int, URLResponse) -> Void, failure: @escaping (Error?, Data?, Int?, URLResponse?)->Void) {
+    static func getDecision(
+        url: String,
+        body: [String: Any]?,
+        headers: [String: String]?,
+        success: @escaping (Data, Int, URLResponse) -> Void,
+        failure: @escaping (Error?, Data?, Int?, URLResponse?) -> Void
+    ) {
+        guard let url = URL(string: url) else {
+            failure(nil, nil, nil, nil) // Invalid URL error can be customized
+            return
+        }
         
-        let url = URL(string: url)!
-        let contentType = "application/json"
-        let type = "Content-Type"
         var request = URLRequest(url: url)
         request.httpMethod = Method.POST.rawValue
-        if let d = body {
-            request.httpBody = d.toData
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        if let headers = headers {
+            for (key, value) in headers {
+                request.setValue(value, forHTTPHeaderField: key)
+            }
         }
-        request.addValue(contentType, forHTTPHeaderField: type)
-        request.allHTTPHeaderFields = headers
-        URLSession.shared.dataTask(with: request) { (data, response, error) in
-            guard let httpURLResponse = response as? HTTPURLResponse, httpURLResponse.statusCode == 200 || httpURLResponse.statusCode == 201,
-                  let d = data, let res = response, error == nil
-            else {
-                if let res = response as? HTTPURLResponse, let data = data {
-                    failure(error, data, res.statusCode, res)
-                } else {
-                    failure(error, nil, nil, response)
-                }
+        
+        if let body = body {
+            request.httpBody = body.toData
+        }
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            // 1. Handle network error first
+            if let error = error {
+                failure(error, data, nil, response)
                 return
             }
-            success(d, httpURLResponse.statusCode, res)
+            
+            // 2. Ensure response is HTTPURLResponse
+            guard let httpResponse = response as? HTTPURLResponse else {
+                failure(nil, data, nil, response)
+                return
+            }
+            
+            let statusCode = httpResponse.statusCode
+            
+            // 3. Check for success status code (200–299)
+            guard (200...299).contains(statusCode) else {
+                failure(nil, data, statusCode, httpResponse)
+                return
+            }
+            
+            // 4. Ensure data exists
+            guard let data = data else {
+                failure(nil, nil, statusCode, httpResponse)
+                return
+            }
+            
+            
+            // 5. Success callback
+            success(data, statusCode, httpResponse)
         }.resume()
     }
-    
-    
 }

@@ -69,6 +69,7 @@
 		3E7923FE2E12916000609A04 /* ExperienceData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E7923FD2E12916000609A04 /* ExperienceData.swift */; };
 		3E7924012E12918500609A04 /* SearchData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E7924002E12918500609A04 /* SearchData.swift */; };
 		3E8CF1F42DC4E4760013DCAF /* ContextObj.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E8CF1F32DC4E4760013DCAF /* ContextObj.swift */; };
+		3E7D2CA12E39194000C2F5C5 /* EventQueueManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E7D2CA02E39194000C2F5C5 /* EventQueueManager.swift */; };
 		46746A872AD6D388001C6A8B /* CoordinatesTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46746A862AD6D388001C6A8B /* CoordinatesTest.swift */; };
 		46746A892AD83214001C6A8B /* ReferrerTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46746A882AD83214001C6A8B /* ReferrerTest.swift */; };
 		46746A8B2AD98B55001C6A8B /* LanguageTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46746A8A2AD98B55001C6A8B /* LanguageTest.swift */; };
@@ -156,6 +157,7 @@
 		3E7923FD2E12916000609A04 /* ExperienceData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExperienceData.swift; sourceTree = "<group>"; };
 		3E7924002E12918500609A04 /* SearchData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchData.swift; sourceTree = "<group>"; };
 		3E8CF1F32DC4E4760013DCAF /* ContextObj.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ContextObj.swift; sourceTree = "<group>"; };
+		3E7D2CA02E39194000C2F5C5 /* EventQueueManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventQueueManager.swift; sourceTree = "<group>"; };
 		46746A862AD6D388001C6A8B /* CoordinatesTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoordinatesTest.swift; sourceTree = "<group>"; };
 		46746A882AD83214001C6A8B /* ReferrerTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferrerTest.swift; sourceTree = "<group>"; };
 		46746A8A2AD98B55001C6A8B /* LanguageTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LanguageTest.swift; sourceTree = "<group>"; };
@@ -281,6 +283,7 @@
 				1F157C7B26B02FCC000D952B /* IPAddressUtil.swift */,
 				1F157C7C26B02FCC000D952B /* UserAgentBuilder.swift */,
 				1F157C7D26B02FCC000D952B /* MError.swift */,
+				3E7D2CA02E39194000C2F5C5 /* EventQueueManager.swift */,
 			);
 			path = utility;
 			sourceTree = "<group>";
@@ -506,6 +509,7 @@
 				1F157CA626B02FCC000D952B /* MLocation.swift in Sources */,
 				3E7924012E12918500609A04 /* SearchData.swift in Sources */,
 				1F157CA126B02FCC000D952B /* FutureOperators.swift in Sources */,
+				3E7D2CA12E39194000C2F5C5 /* EventQueueManager.swift in Sources */,
 				1F157C7F26B02FCC000D952B /* Personalization.swift in Sources */,
 				1F157C8426B02FCC000D952B /* Log.swift in Sources */,
 				1F157C7E26B02FCC000D952B /* ScheduleTimer.swift in Sources */,

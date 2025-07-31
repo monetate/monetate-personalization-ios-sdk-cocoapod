@@ -41,9 +41,14 @@ extension String {
 extension Data {
     func toJSON () -> [String: Any]?{
         do {
-            return try JSONSerialization.jsonObject(with: self, options: []) as? [String: Any]
+            let json = try JSONSerialization.jsonObject(with: self, options: [])
+            if let dict = json as? [String: Any] {
+                return dict
+            } else {
+                Log.error("Data is valid JSON but not a dictionary")
+                return nil
+            }
         } catch {
-           
             Log.error("Data \(error.localizedDescription)")
         }
         return nil
