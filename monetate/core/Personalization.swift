@@ -46,7 +46,6 @@ public class Personalization {
         return UUID().uuidString
     }
     
-    private var queue: [ContextEnum: MEvent] = [:]
     private let eventQueueManager = EventQueueManager()
     private var errorQueue: [MError] = []
     
