@@ -95,82 +95,61 @@ class Utility {
         return promise.future
     }
     
-    static func createEventBody (queue: [ContextEnum: MEvent]) -> [[String:Any]?]  {
-        var json:[[String:Any]?] = []
-        for (key,val) in queue {
-            if key == .CustomVariables, let val = val as? CustomVariables {
-                let data = try! JSONEncoder().encode(val)
-                json.append(data.toJSON())
+    static func createEventBody(queue: [ContextEnum: MEvent]) -> [[String: Any]] {
+        var json: [[String: Any]] = []
+        
+        for (key, val) in queue {
+            var data: Data?
+            
+            switch key {
+            case .CustomVariables:
+                data = try? JSONEncoder().encode(val as? CustomVariables)
+            case .PageView:
+                data = try? JSONEncoder().encode(val as? PageView)
+            case .Language:
+                data = try? JSONEncoder().encode(val as? Language)
+            case .RecClicks:
+                data = try? JSONEncoder().encode(val as? RecClicks)
+            case .RecImpressions:
+                data = try? JSONEncoder().encode(val as? RecImpressions)
+            case .Impressions:
+                data = try? JSONEncoder().encode(val as? Impressions)
+            case .PageEvents:
+                data = try? JSONEncoder().encode(val as? PageEvents)
+            case .Referrer:
+                data = try? JSONEncoder().encode(val as? Referrer)
+            case .UserAgent:
+                data = try? JSONEncoder().encode(val as? UserAgent)
+            case .Coordinates:
+                data = try? JSONEncoder().encode(val as? Coordinates)
+            case .ScreenSize:
+                data = try? JSONEncoder().encode(val as? ScreenSize)
+            case .IpAddress:
+                data = try? JSONEncoder().encode(val as? IPAddress)
+            case .Cart:
+                data = try? JSONEncoder().encode(val as? Cart)
+            case .AddToCart:
+                data = try? JSONEncoder().encode(val as? AddToCart)
+            case .ProductDetailView:
+                data = try? JSONEncoder().encode(val as? ProductDetailView)
+            case .ProductThumbnailView:
+                data = try? JSONEncoder().encode(val as? ProductThumbnailView)
+            case .Purchase:
+                data = try? JSONEncoder().encode(val as? Purchase)
+            case .DecisionRequest:
+                data = try? JSONEncoder().encode(val as? DecisionRequest)
+            default:
+                Log.error("Invalid event key\(key)")
             }
-            if key == .PageView, let val = val as? PageView {
-                let data = try! JSONEncoder().encode(val)
-                json.append(data.toJSON())
-            }
-            if key == .Language, let val = val as? Language {
-                let data = try! JSONEncoder().encode(val)
-                json.append(data.toJSON())
-            }
-            if key == .RecClicks, let val = val as? RecClicks {
-                let data = try! JSONEncoder().encode(val)
-                json.append(data.toJSON())
-            }
-            if key == .RecImpressions, let val = val as? RecImpressions {
-                let data = try! JSONEncoder().encode(val)
-                json.append(data.toJSON())
-            }
-            if key == .Impressions, let val = val as? Impressions {
-                let data = try! JSONEncoder().encode(val)
-                json.append(data.toJSON())
-            }
-            if key == .PageEvents, let val = val as? PageEvents {
-                let data = try! JSONEncoder().encode(val)
-                json.append(data.toJSON())
-            }
-            if key == .Referrer, let val = val as? Referrer {
-                let data = try! JSONEncoder().encode(val)
-                json.append(data.toJSON())
-            }
-            if key == .UserAgent, let val = val as? UserAgent {
-                let data = try! JSONEncoder().encode(val)
-                json.append(data.toJSON())
-            }
-            if key == .Coordinates, let val = val as? Coordinates {
-                let data = try! JSONEncoder().encode(val)
-                json.append(data.toJSON())
-            }
-            if key == .ScreenSize, let val = val as? ScreenSize {
-                let data = try! JSONEncoder().encode(val)
-                json.append(data.toJSON())
-            }
-            if key == .IpAddress, let val = val as? IPAddress {
-                let data = try! JSONEncoder().encode(val)
-                json.append(data.toJSON())
-            }
-            if key == .Cart, let val = val as? Cart {
-                let data = try! JSONEncoder().encode(val)
-                json.append(data.toJSON())
-            }
-            if key == .AddToCart, let val = val as? AddToCart {
-                let data = try! JSONEncoder().encode(val)
-                json.append(data.toJSON())
-            }
-            if key == .ProductDetailView, let val = val as? ProductDetailView {
-                let data = try! JSONEncoder().encode(val)
-                json.append(data.toJSON())
-            }
-            if key == .ProductThumbnailView, let val = val as? ProductThumbnailView {
-                let data = try! JSONEncoder().encode(val)
-                json.append(data.toJSON())
-            }
-            if key == .Purchase, let val = val as? Purchase {
-                let data = try! JSONEncoder().encode(val)
-                json.append(data.toJSON())
-            }
-            if key == .DecisionRequest, let val = val as? DecisionRequest {
-                let data = try! JSONEncoder().encode(val)
-                json.append(data.toJSON())
+            
+            if let validData = data, let dict = validData.toJSON() {
+                json.append(dict)
+            } else {
+                Log.error("Failed to encode or convert \(key) to JSON dictionary")
             }
         }
+        
         return json
     }
+
 }
