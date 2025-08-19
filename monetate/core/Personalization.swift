@@ -15,10 +15,12 @@ public class Personalization {
     private var user: User
     public var timer: ScheduleTimer?
     
+    private let eventQueueManager = EventQueueManager()
+    private var errorQueue: [MError] = []
+    
     private var searchPrerequisite: SearchPreRequisite?
     
     //constructor
-    
     public init (account: Account, user: User) {
         self.account = account
         self.user = user
@@ -45,9 +47,6 @@ public class Personalization {
     private func generateRequestId() -> String {
         return UUID().uuidString
     }
-    
-    private let eventQueueManager = EventQueueManager()
-    private var errorQueue: [MError] = []
     
     func isContextSwitched (ctx:ContextEnum, event: MEvent) -> Bool {
         if ((ctx == .UserAgent || ctx == .IpAddress || ctx == .Coordinates ||
@@ -466,18 +465,13 @@ extension Personalization {
                 .on(
                     success: { [weak self] preRequisite in
                         
-                        guard let self = self else {
-                            let error = SearchError.configurationFailed
-                            Log.error(error.localizedDescription)
-                            promise.fail(error: error)
-                            return
-                        }
+                        guard let self = self.guardSelf(promise: promise) else { return }
                         
                         self.searchPrerequisite = preRequisite
                         self.fetchSearchData(searchTerm: searchTerm, limit: limit)
                             .on(
                                 success: { apiResponse in
-                                    
+                                    promise.succeed(value: apiResponse)
                                 },
                                 failure: { err in
                                     Log.error(err.localizedDescription)
@@ -509,11 +503,7 @@ extension Personalization {
         future
             .on(
                 success: { [weak self] responseData in
-                    guard let self = self else {
-                        let error = SearchError.configurationFailed
-                        promise.fail(error: error)
-                        return
-                    }
+                    guard let self = self.guardSelf(promise: promise) else { return }
                     
                     do {
                         let searchPrerequisite = try self.extractSearchPreRequestInfo(from: responseData)
@@ -613,11 +603,23 @@ extension Personalization {
         let promise = Promise<APIResponse, Error>()
         
         do {
-            let body = createSearchBody(searchTerm: searchTerm, limit: limit, searchToken: self.searchPrerequisite?.searchToken)
-            let jsonData = try JSONSerialization.data(withJSONObject: body.toDictionary(), options: .prettyPrinted)
-               if let jsonString = String(data: jsonData, encoding: .utf8) {
-                   print(jsonString)
-               }
+            let reqId = generateRequestId()
+            let body = createSearchBody(searchTerm: searchTerm, limit: limit, searchToken: self.searchPrerequisite?.searchToken, reqId: reqId)
+            let bodyDict = try body.toDictionary()
+            Log.debug("Search request body - \(bodyDict.toString ?? "nil"))")
+            
+            self.monetateSearchApiCall(
+                endpoint: .search,
+                body: bodyDict,
+                channelData: searchPrerequisite?.channelData ?? "",
+                requestId: reqId).on (
+                    success: { response in
+                        promise.succeed(value: response)
+                    },
+                    failure: { err in
+                        promise.fail(error: err)
+                    }
+                )
         } catch {
             promise.fail(error: error)
         }
@@ -637,11 +639,70 @@ extension Personalization {
 
      - Returns: A fully formed `SearchRequest` ready for use in a search operation.
      */
-    private func createSearchBody(searchTerm: String, limit: Int, searchToken: String?) -> SearchRequest {
+    private func createSearchBody(searchTerm: String, limit: Int, searchToken: String?, reqId: String) -> SearchRequest {
         let queryTerm = SearchRequest.QueryTerm(term: searchTerm)
         let settings = SearchRequest.RecordSettings(query: queryTerm, limit: limit)
-        let recordQuery = SearchRequest.RecordQuery(id: generateRequestId(), typeOfRequest: .search, settings: settings)
+        let recordQuery = SearchRequest.RecordQuery(id: reqId, typeOfRequest: .search, settings: settings)
         return SearchRequest(recordQueries: [recordQuery], suggestions: [], searchToken: searchToken)
+    }
+    
+    /**
+     Makes an asynchronous API call to the Monetate search endpoint.
+
+     This function constructs and sends a search request using the provided endpoint,
+     request body, channel information, and request identifier. It returns a `Future`
+     that will eventually contain either a successful `APIResponse` or an `Error`.
+
+     - Parameters:
+       - endpoint: The API endpoint configuration to use for the request.
+       - body: A dictionary representing the JSON payload to send in the request body.
+       - channelData: A string representing channel-specific data (e.g., platform or source).
+       - requestId: A unique identifier for tracking the API request.
+
+     - Returns: A `Future` containing an `APIResponse` on success or an `Error` on failure.
+     */
+    private func monetateSearchApiCall(
+        endpoint: APIConfig.Endpoint,
+        body: [String: Any],
+        channelData: String,
+        requestId: String
+    ) -> Future<APIResponse, Error> {
+        let promise = Promise<APIResponse, Error>()
+        let url = getSearchURL(channel: channelData, endpoint: endpoint)
+        Service.getDecision(
+            url: url,
+            body: body,
+            headers: nil,
+            success: { data, statusCode, response in
+                let apiResponse = APIResponse(success: true, res: response, status: statusCode, data: data, requestId:requestId)
+                Log.debug("Search API success response - \(String(describing: apiResponse.data))")
+                promise.succeed(value: apiResponse)
+            },
+            failure: { (er, d, status, res) in
+                Log.debug("Search API - Error")
+                
+                if let err = er {
+                    let mError = MError(description: err.localizedDescription, domain: .ServerError, info: nil)
+                    self.errorQueue.append(mError)
+                    Log.error("Search API Error Message - \(err.localizedDescription)")
+                    promise.fail(error: err)
+                } else {
+                    let er = NSError.init(domain: "API Error", code: status ?? -1, userInfo: nil)
+                    if let val = d {
+                        let mError = MError(description: er.localizedDescription, domain: .APIError, info: val.toJSON() ?? [:])
+                        self.errorQueue.append(mError)
+                        Log.error("Search API Error Message- \(val.toString)")
+                        promise.fail(error: mError)
+                    } else {
+                        let mError = MError(description: er.localizedDescription, domain: .APIError, info: nil)
+                        self.errorQueue.append(mError)
+                        Log.error("Search API Error Message - \(er.localizedDescription)")
+                        promise.fail(error: mError)
+                    }
+                }
+            }
+        )
+        return promise.future
     }
 }
 
@@ -666,3 +727,13 @@ extension Encodable {
     }
 }
 
+ private extension Optional where Wrapped: AnyObject {
+    func guardSelf<T>(promise: Promise<T, Error>, failure: Error = SearchError.configurationFailed) -> Wrapped? {
+        guard let selfRef = self else {
+            Log.error(failure.localizedDescription)
+            promise.fail(error: failure)
+            return nil
+        }
+        return selfRef
+    }
+}

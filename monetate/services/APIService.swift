@@ -8,6 +8,30 @@
 
 import Foundation
 
+/// Holds configuration constants for the Monetate API.
+struct APIConfig {
+    static let scheme = "https"
+    static let domain = "engine.monetate.net"
+    
+    struct Paths {
+        static let decide = "/api/engine/v1/decide/"
+        static let search = "/api/search/v1/site-search/"
+    }
+    
+    enum Endpoint: String {
+        case search
+    }
+}
+
+
+func getSearchURL(channel: String, endpoint: APIConfig.Endpoint) -> String {
+    var components = URLComponents()
+    components.scheme = APIConfig.scheme
+    components.host = APIConfig.domain
+    components.path = APIConfig.Paths.search + "\(channel)/\(endpoint.rawValue)"
+    return components.url?.absoluteString ?? ""
+}
+
 enum TypeOfRequest: String, Codable {
     case search = "SEARCH"
 }
