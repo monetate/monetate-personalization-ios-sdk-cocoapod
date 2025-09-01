@@ -47,13 +47,13 @@ struct SearchRequest: Codable {
     }
     
     struct RecordQuery: Codable {
-        let id: String?
+        let id: ActionIdEnum?
         let typeOfRequest: TypeOfRequest?
         let settings: RecordSettings?
         
         private enum CodingKeys: String, CodingKey {
             case id
-            case typeOfRequest = "typeOfRequest"
+            case typeOfRequest
             case settings
         }
     }
@@ -89,7 +89,7 @@ enum SearchError: LocalizedError {
         case .noActionsFound:
             return "Execution Alert: No actions found in response data during search."
         case .noSearchActionFound(let domain):
-            return "Execution Alert: No active search actions of type \"\(ContextEnum.search.rawValue)\" found for domain \"\(domain)\"."
+            return "Execution Alert: No active search actions of type \"\(ActionTypeEnum.searchAction.rawValue)\" found for domain \"\(domain)\"."
         case .missingActionProperties:
             return "Execution Alert: Missing required searchToken parameter in action."
         case .configurationFailed:
