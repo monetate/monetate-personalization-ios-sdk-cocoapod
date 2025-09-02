@@ -19,7 +19,7 @@ public class Personalization {
     private var errorQueue: [MError] = []
     
     private var searchPrerequisite: SearchPreRequisite?
-    
+    private let sdkQueue = DispatchQueue(label: "sdk.Monetate.processing", qos: .userInitiated)
     //constructor
     public init (account: Account, user: User) {
         self.account = account
@@ -444,7 +444,6 @@ extension Personalization {
         searchTerm: String,
         limit: Int = 10) -> Future<APIResponse, Error> {
             let promise = Promise<APIResponse, Error>()
-            let prerequisiteFuture: Future<SearchPreRequisite, Error>
             
             // Validate input: trimmed non-empty, limit greater than zero
             guard !searchTerm.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
@@ -453,36 +452,106 @@ extension Personalization {
                 promise.fail(error: error)
                 return promise.future
             }
-            if let obtPreRequisite = self.searchPrerequisite {
-                // Wrap the cached prerequisite in an already succeeded future
-                prerequisiteFuture = Future(value: obtPreRequisite)
-            } else {
-                prerequisiteFuture = fetchSearchPrerequisiteData()
+            sdkQueue.async { [weak self] in
+                guard let self = self.guardSelf(promise: promise) else { return }
+                
+                let prerequisiteFuture: Future<SearchPreRequisite, Error>
+                if let obtPreRequisite = self.searchPrerequisite {
+                    // Wrap the cached prerequisite in an already succeeded future
+                    prerequisiteFuture = Future(value: obtPreRequisite)
+                } else {
+                    prerequisiteFuture = self.fetchSearchPrerequisiteData()
+                }
+                
+                //Obtain prerequisite parameters
+                prerequisiteFuture
+                    .observe(on: self.sdkQueue)
+                    .on(
+                        success: { [weak self] preRequisite in
+                            
+                            guard let self = self.guardSelf(promise: promise) else { return }
+                            
+                            self.searchPrerequisite = preRequisite
+                            self.fetchSearchData(searchTerm: searchTerm, limit: limit)
+                                .on(
+                                    success: { apiResponse in
+                                        promise.succeed(value: apiResponse)
+                                    },
+                                    failure: { err in
+                                        Log.error(err.localizedDescription)
+                                        promise.fail(error: err)
+                                    })
+                        },
+                        failure: { err in
+                            Log.error(err.localizedDescription)
+                            promise.fail(error: err)
+                        })
             }
+            return promise.future
+        }
+    
+    
+    /**
+         Fetches auto-suggestions based on the provided search term.
+
+         This function validates the search term, ensures prerequisite data is available,
+         and asynchronously performs a search query to fetch suggestions.
+
+         - Parameters:
+            - searchTerm: The search query string. Must be a non-empty string.
+            - limit: The maximum number of suggestions to return. Defaults to 10.
+            - returnProducts: A flag indicating whether the search should include products. Defaults to `false`.
+
+         - Returns: A `Future` containing an `APIResponse` with search results or an `Error` if the operation fails.
+         */
+    public func fetchAutoSuggestion(
+        searchTerm: String,
+        limit: Int = 10,
+        returnProducts: Bool = false) -> Future<APIResponse, Error> {
+            let promise = Promise<APIResponse, Error>()
             
-            //Obtain prerequisite parameters
-            prerequisiteFuture
-                .on(
-                    success: { [weak self] preRequisite in
-                        
-                        guard let self = self.guardSelf(promise: promise) else { return }
-                        
-                        self.searchPrerequisite = preRequisite
-                        self.fetchSearchData(searchTerm: searchTerm, limit: limit)
-                            .on(
-                                success: { apiResponse in
-                                    promise.succeed(value: apiResponse)
-                                },
-                                failure: { err in
-                                    Log.error(err.localizedDescription)
-                                    promise.fail(error: err)
-                                })
-                    },
-                    failure: { err in
-                        Log.error(err.localizedDescription)
-                        promise.fail(error: err)
-                    })
-            
+            // Validate input: trimmed non-empty, limit greater than zero
+            guard !searchTerm.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+                let error = SearchError.invalidInput
+                Log.error(error.localizedDescription)
+                promise.fail(error: error)
+                return promise.future
+            }
+            sdkQueue.async { [weak self] in
+                guard let self = self.guardSelf(promise: promise) else { return }
+                
+                let prerequisiteFuture: Future<SearchPreRequisite, Error>
+                if let obtPreRequisite = self.searchPrerequisite {
+                    // Wrap the cached prerequisite in an already succeeded future
+                    prerequisiteFuture = Future(value: obtPreRequisite)
+                } else {
+                    prerequisiteFuture = self.fetchSearchPrerequisiteData()
+                }
+                
+                //Obtain prerequisite parameters
+                prerequisiteFuture
+                    .observe(on: self.sdkQueue)
+                    .on(
+                        success: { [weak self] preRequisite in
+                            
+                            guard let self = self.guardSelf(promise: promise) else { return }
+                            
+                            self.searchPrerequisite = preRequisite
+                            self.fetchSearchData(searchTerm: searchTerm, limit: limit, isAutoSuggest: true)
+                                .on(
+                                    success: { apiResponse in
+                                        promise.succeed(value: apiResponse)
+                                    },
+                                    failure: { err in
+                                        Log.error(err.localizedDescription)
+                                        promise.fail(error: err)
+                                    })
+                        },
+                        failure: { err in
+                            Log.error(err.localizedDescription)
+                            promise.fail(error: err)
+                        })
+            }
             return promise.future
         }
     
@@ -497,10 +566,11 @@ extension Personalization {
         let future = self.getActionsData(
             requestId: requestId,
             includeReporting: false,
-            arrActionTypes: [ContextEnum.search.rawValue]
+            arrActionTypes: [ActionTypeEnum.searchAction.rawValue]
         )
         
         future
+            .observe(on: sdkQueue)
             .on(
                 success: { [weak self] responseData in
                     guard let self = self.guardSelf(promise: promise) else { return }
@@ -567,7 +637,7 @@ extension Personalization {
             let actions = firstResponse.experienceActions,
             !actions.isEmpty
         {
-            if let searchAction = actions.first(where: { $0.actionType == ContextEnum.search.rawValue }) {
+            if let searchAction = actions.first(where: { $0.actionType == ActionTypeEnum.searchAction.rawValue }) {
                 if let token = searchAction.searchToken {
                     searchToken = token
                 } else {
@@ -598,13 +668,14 @@ extension Personalization {
      */
     private func fetchSearchData(
         searchTerm: String,
-        limit: Int
+        limit: Int,
+        isAutoSuggest: Bool = false
     ) -> Future<APIResponse, Error> {
         let promise = Promise<APIResponse, Error>()
         
         do {
-            let reqId = generateRequestId()
-            let body = createSearchBody(searchTerm: searchTerm, limit: limit, searchToken: self.searchPrerequisite?.searchToken, reqId: reqId)
+            let reqId = ActionIdEnum.productSearch.rawValue
+            let body = createSearchBody(searchTerm: searchTerm, limit: limit, searchToken: self.searchPrerequisite?.searchToken)
             let bodyDict = try body.toDictionary()
             Log.debug("Search request body - \(bodyDict.toString ?? "nil"))")
             
@@ -639,10 +710,10 @@ extension Personalization {
 
      - Returns: A fully formed `SearchRequest` ready for use in a search operation.
      */
-    private func createSearchBody(searchTerm: String, limit: Int, searchToken: String?, reqId: String) -> SearchRequest {
+    private func createSearchBody(searchTerm: String, limit: Int, searchToken: String?) -> SearchRequest {
         let queryTerm = SearchRequest.QueryTerm(term: searchTerm)
         let settings = SearchRequest.RecordSettings(query: queryTerm, limit: limit)
-        let recordQuery = SearchRequest.RecordQuery(id: reqId, typeOfRequest: .search, settings: settings)
+        let recordQuery = SearchRequest.RecordQuery(id: .productSearch, typeOfRequest: .search, settings: settings)
         return SearchRequest(recordQueries: [recordQuery], suggestions: [], searchToken: searchToken)
     }
     

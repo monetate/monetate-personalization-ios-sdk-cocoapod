@@ -29,5 +29,13 @@ public enum ContextEnum: String, MEvent {
     case DecisionRequest = "monetate:decision:DecisionRequest"
     case RecClicks = "monetate:record:RecClicks"
     case RecImpressions = "monetate:record:RecImpressions"
-    case search = "monetate:action:SiteSearchApiAction"
+}
+
+public enum ActionTypeEnum: String {
+    case searchAction = "monetate:action:SiteSearchApiAction"
+}
+
+public enum ActionIdEnum: String, Codable{
+    case productSearch
+    case suggestionQuery
 }
