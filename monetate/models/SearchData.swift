@@ -68,8 +68,15 @@ struct SearchRequest: Codable {
     }
     
     struct Suggestion: Codable {
-        let label: String?
-        let value: String?
+        let suggestionID: ActionIdEnum?
+        let typeOfQuery: TypeOfRequest?
+        let query: String?
+
+        enum CodingKeys: String, CodingKey {
+            case suggestionID = "id"
+            case typeOfQuery
+            case query
+        }
     }
 }
 
