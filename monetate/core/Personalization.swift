@@ -298,11 +298,13 @@ public class Personalization {
         
         if let val = self.user.deviceId { body["deviceId"] = val } else if let val = self.user.monetateId { body["monetateId"] = val }
         if let val = self.user.customerId { body["customerId"] = val }
+        let engineURL = self.API_URL + account.getShortName()
         let jsonString = body.toString ?? "JSON String conversion failed. Fallback: \(String(describing: body))"
+        Log.debug("Monetate Engine API URL - \(engineURL)")
         Log.debug("Monetate Engine API body created - \(jsonString)")
         
         self.timer?.suspend()
-        Service.getDecision(url: self.API_URL + account.getShortName(), body: body, headers: nil, success: {[weak self] (data, status, res) in
+        Service.getDecision(url: engineURL, body: body, headers: nil, success: {[weak self] (data, status, res) in
             self?.eventQueueManager.updateQueue([:])
             Log.debug("callMonetateAPI - Success - \(data.toString)")
             
@@ -442,7 +444,7 @@ extension Personalization {
      */
     public func fetchSearchResults(
         searchTerm: String,
-        limit: Int = 10) -> Future<APIResponse, Error> {
+        limit: Int = 12) -> Future<APIResponse, Error> {
             let promise = Promise<APIResponse, Error>()
             
             // Validate input: trimmed non-empty, limit greater than zero
@@ -506,7 +508,7 @@ extension Personalization {
          */
     public func fetchAutoSuggestion(
         searchTerm: String,
-        limit: Int = 10,
+        limit: Int = 12,
         returnProducts: Bool = false) -> Future<APIResponse, Error> {
             let promise = Promise<APIResponse, Error>()
             
@@ -537,7 +539,7 @@ extension Personalization {
                             guard let self = self.guardSelf(promise: promise) else { return }
                             
                             self.searchPrerequisite = preRequisite
-                            self.fetchSearchData(searchTerm: searchTerm, limit: limit, isAutoSuggest: true)
+                            self.fetchSearchData(searchTerm: searchTerm, limit: limit, isAutoSuggest: true, withProduct: returnProducts)
                                 .on(
                                     success: { apiResponse in
                                         promise.succeed(value: apiResponse)
@@ -663,21 +665,23 @@ extension Personalization {
      - Parameters:
        - searchTerm: The string term to search for.
        - limit: The maximum number of results to return.
+       - isAutoSuggest:  A Boolean flag indicating whether the request is for autosuggestions (default is `false`).
+       - withProduct: A Boolean flag indicating whether to include product search results along with autosuggestions (default is `false`).
      
      - Returns: A `Future` containing an `APIResponse` or an `Error`.
      */
     private func fetchSearchData(
         searchTerm: String,
         limit: Int,
-        isAutoSuggest: Bool = false
+        isAutoSuggest: Bool = false,
+        withProduct: Bool = false
     ) -> Future<APIResponse, Error> {
         let promise = Promise<APIResponse, Error>()
         
         do {
-            let reqId = ActionIdEnum.productSearch.rawValue
-            let body = createSearchBody(searchTerm: searchTerm, limit: limit, searchToken: self.searchPrerequisite?.searchToken)
+            let reqId = isAutoSuggest ? ActionIdEnum.suggestionQuery.rawValue : ActionIdEnum.productSearch.rawValue
+            let body = isAutoSuggest ? createAutoSuggestBody(searchTerm: searchTerm, limit: limit, searchToken: self.searchPrerequisite?.searchToken, withProduct: withProduct) : createSearchBody(searchTerm: searchTerm, limit: limit, searchToken: self.searchPrerequisite?.searchToken)
             let bodyDict = try body.toDictionary()
-            Log.debug("Search request body - \(bodyDict.toString ?? "nil"))")
             
             self.monetateSearchApiCall(
                 endpoint: .search,
@@ -698,24 +702,55 @@ extension Personalization {
     }
 
     /**
-     Creates a `SearchRequest` object configured with the given search term, result limit, and search token.
+     Creates a `SearchRequest` for performing a product search.
 
-     This method constructs the necessary query components including the query term, record settings,
-     and a unique record query, and wraps them into a `SearchRequest` which can be used to perform a search.
+     This method builds the query term, record settings, and a record query using the provided
+     search term and limit. It returns a `SearchRequest` that contains the necessary data to
+     perform a standard product search.
 
      - Parameters:
-       - searchTerm: The string term to be searched.
-       - limit: The maximum number of results to return.
-       - searchToken: A token to identify or track the search session.
+       - searchTerm: The term to be used in the search query.
+       - limit: The maximum number of search results to return.
+       - searchToken: An optional token used to identify or track the search session.
 
-     - Returns: A fully formed `SearchRequest` ready for use in a search operation.
+     - Returns: A `SearchRequest` object configured for product search.
      */
+
     private func createSearchBody(searchTerm: String, limit: Int, searchToken: String?) -> SearchRequest {
         let queryTerm = SearchRequest.QueryTerm(term: searchTerm)
         let settings = SearchRequest.RecordSettings(query: queryTerm, limit: limit)
         let recordQuery = SearchRequest.RecordQuery(id: .productSearch, typeOfRequest: .search, settings: settings)
         return SearchRequest(recordQueries: [recordQuery], suggestions: [], searchToken: searchToken)
     }
+    
+    /**
+     Creates a `SearchRequest` for fetching autosuggestions, with optional product search.
+
+     This method constructs a `SearchRequest` tailored for autosuggestion use cases.
+     If `withProduct` is `true`, it includes a product search query in addition to autosuggestions.
+     Otherwise, it only includes the autosuggestion component.
+
+     - Parameters:
+       - searchTerm: The term for which suggestions are to be retrieved.
+       - limit: The maximum number of product search results to include, if `withProduct` is `true`.
+       - searchToken: An optional token to track or associate the request.
+       - withProduct: A Boolean indicating whether to include product search data alongside suggestions.
+
+     - Returns: A `SearchRequest` object configured for autosuggestion (and optionally product search).
+     */
+
+    
+    private func createAutoSuggestBody(searchTerm: String, limit: Int, searchToken: String?, withProduct: Bool) -> SearchRequest {
+        let suggestTerm = SearchRequest.Suggestion(suggestionID: .suggestionQuery, typeOfQuery: .autoSuggestion, query: searchTerm)
+        if(withProduct) {
+            let queryTerm = SearchRequest.QueryTerm(term: searchTerm)
+            let settings = SearchRequest.RecordSettings(query: queryTerm, limit: limit)
+            let recordQuery = SearchRequest.RecordQuery(id: .productSearch, typeOfRequest: .search, settings: settings)
+            return SearchRequest(recordQueries: [recordQuery], suggestions: [suggestTerm], searchToken: searchToken)
+        }
+       return SearchRequest(recordQueries: [], suggestions: [suggestTerm], searchToken: searchToken)
+    }
+    
     
     /**
      Makes an asynchronous API call to the Monetate search endpoint.
@@ -740,29 +775,31 @@ extension Personalization {
     ) -> Future<APIResponse, Error> {
         let promise = Promise<APIResponse, Error>()
         let url = getSearchURL(channel: channelData, endpoint: endpoint)
+        Log.debug("request URL - \(url)")
+        Log.debug("\(requestId) request body - \(body.toString ?? "nil"))")
         Service.getDecision(
             url: url,
             body: body,
             headers: nil,
             success: { data, statusCode, response in
                 let apiResponse = APIResponse(success: true, res: response, status: statusCode, data: data, requestId:requestId)
-                Log.debug("Search API success response - \(String(describing: apiResponse.data))")
+                Log.debug("\(requestId) API success response - \(String(describing: apiResponse.data))")
                 promise.succeed(value: apiResponse)
             },
             failure: { (er, d, status, res) in
-                Log.debug("Search API - Error")
+                Log.debug("\(requestId) API - Error")
                 
                 if let err = er {
                     let mError = MError(description: err.localizedDescription, domain: .ServerError, info: nil)
                     self.errorQueue.append(mError)
-                    Log.error("Search API Error Message - \(err.localizedDescription)")
+                    Log.error("\(requestId) API Error Message - \(err.localizedDescription)")
                     promise.fail(error: err)
                 } else {
                     let er = NSError.init(domain: "API Error", code: status ?? -1, userInfo: nil)
                     if let val = d {
                         let mError = MError(description: er.localizedDescription, domain: .APIError, info: val.toJSON() ?? [:])
                         self.errorQueue.append(mError)
-                        Log.error("Search API Error Message- \(val.toString)")
+                        Log.error("\(requestId) API Error Message- \(val.toString)")
                         promise.fail(error: mError)
                     } else {
                         let mError = MError(description: er.localizedDescription, domain: .APIError, info: nil)

@@ -34,6 +34,7 @@ func getSearchURL(channel: String, endpoint: APIConfig.Endpoint) -> String {
 
 enum TypeOfRequest: String, Codable {
     case search = "SEARCH"
+    case autoSuggestion = "AUTO_SUGGESTIONS"
 }
 
 enum Method:String {
