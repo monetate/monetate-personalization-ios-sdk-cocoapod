@@ -666,7 +666,7 @@ extension Personalization {
             let body = isAutoSuggest ? createAutoSuggestBody(searchTerm: searchTerm, limit: limit, searchToken: self.searchPrerequisite?.searchToken, withProduct: withProduct) : createSearchBody(searchTerm: searchTerm, limit: limit, searchToken: self.searchPrerequisite?.searchToken)
             let bodyDict = try body.toDictionary()
             
-            self.monetateSearchApiCall(
+            self.callMonetateSiteSearchAPI(
                 endpoint: .search,
                 body: bodyDict,
                 channelData: searchPrerequisite?.channelData ?? "",
@@ -734,9 +734,52 @@ extension Personalization {
        return SearchRequest(recordQueries: [], suggestions: [suggestTerm], searchToken: searchToken)
     }
     
+    /**
+     Reports a search token click event asynchronously to the backend service.
+
+     This method sends the provided search token to the reporting endpoint,
+     enabling tracking and analytics of user interactions with search results.
+
+     - Parameter searchToken: The token representing the search click event to be reported.
+
+     - Returns: A `Future` that completes with an `APIResponse` on success, or an `Error` on failure.
+     */
+    public func reportSearchClickToken(
+        searchToken: String
+    ) -> Future<APIResponse, Error> {
+        let promise = Promise<APIResponse, Error>()
+        // Token validation
+        guard !searchToken.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            let error = SearchError.invalidClickToken
+            Log.error(error.localizedDescription)
+            promise.fail(error: error)
+            return promise.future
+        }
+        
+        do {
+            let channel = account.getChannel()
+            let bodyDict = try TokenClickRequest(searchClickToken: searchToken).toDictionary()
+            let requestId = ActionIdEnum.reportTokenClick.rawValue
+            
+            callMonetateSiteSearchAPI(endpoint: .reportClick, body: bodyDict, channelData: channel, requestId: requestId)
+                .on(
+                    success: { response in
+                        promise.succeed(value: response)
+                    },
+                    failure: { err in
+                        promise.fail(error: err)
+                    }
+                )
+        } catch {
+            promise.fail(error: error)
+        }
+        
+        return promise.future
+    }
+    
     
     /**
-     Makes an asynchronous API call to the Monetate search endpoint.
+     Makes an asynchronous API call to the Monetate site search API.
 
      This function constructs and sends a search request using the provided endpoint,
      request body, channel information, and request identifier. It returns a `Future`
@@ -750,15 +793,15 @@ extension Personalization {
 
      - Returns: A `Future` containing an `APIResponse` on success or an `Error` on failure.
      */
-    private func monetateSearchApiCall(
+    private func callMonetateSiteSearchAPI(
         endpoint: APIConfig.Endpoint,
         body: [String: Any],
         channelData: String,
         requestId: String
     ) -> Future<APIResponse, Error> {
         let promise = Promise<APIResponse, Error>()
-        let url = getSearchURL(channel: channelData, endpoint: endpoint)
-        Log.debug("request URL - \(url)")
+        let url = getSiteSearchURL(channel: channelData, endpoint: endpoint)
+        Log.debug("\(requestId) request URL - \(url)")
         Log.debug("\(requestId) request body - \(body.toString ?? "nil"))")
         Service.getDecision(
             url: url,
