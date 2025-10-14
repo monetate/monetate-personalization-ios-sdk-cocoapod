@@ -38,4 +38,5 @@ public enum ActionTypeEnum: String {
 public enum ActionIdEnum: String, Codable{
     case productSearch
     case suggestionQuery
+    case reportTokenClick
 }

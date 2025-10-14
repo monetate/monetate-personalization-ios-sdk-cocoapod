@@ -80,6 +80,11 @@ struct SearchRequest: Codable {
     }
 }
 
+/// Report search token click
+struct TokenClickRequest: Codable {
+    let searchClickToken: String
+}
+
 /// Search error handler
 enum SearchError: LocalizedError {
     case invalidInput
@@ -88,6 +93,7 @@ enum SearchError: LocalizedError {
     case missingActionProperties
     case configurationFailed
     case fetchFailed
+    case invalidClickToken
 
     var errorDescription: String? {
         switch self {
@@ -103,6 +109,8 @@ enum SearchError: LocalizedError {
             return "Configuration or network issue encountered. Ensure SDK is properly configured."
         case .fetchFailed:
             return "Failed to fetch search results: input invalid or no data returned."
+        case .invalidClickToken:
+            return "Input token was empty or invalid, Please provide a valid token"
         }
     }
 }

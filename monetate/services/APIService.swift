@@ -20,15 +20,24 @@ struct APIConfig {
     
     enum Endpoint: String {
         case search
+        case reportClick = "report-click"
+        
+        /// Builds path with given channel
+        func path(for channel: String = "") -> String {
+            switch self {
+            case .search, .reportClick:
+                return APIConfig.Paths.search + "\(channel)/\(self.rawValue)"
+            }
+        }
     }
 }
 
 
-func getSearchURL(channel: String, endpoint: APIConfig.Endpoint) -> String {
+func getSiteSearchURL(channel: String, endpoint: APIConfig.Endpoint) -> String {
     var components = URLComponents()
     components.scheme = APIConfig.scheme
     components.host = APIConfig.domain
-    components.path = APIConfig.Paths.search + "\(channel)/\(endpoint.rawValue)"
+    components.path = endpoint.path(for: channel)
     return components.url?.absoluteString ?? ""
 }
 
