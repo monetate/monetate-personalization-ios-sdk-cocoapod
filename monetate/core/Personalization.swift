@@ -503,7 +503,7 @@ extension Personalization {
             guard let self = self.guardSelf(promise: promise) else { return }
     
             let prerequisiteFuture: Future<SearchPreRequisite, Error>
-            if let cachedPreReq = self.searchPrerequisite {
+            if let cachedPreReq = self.searchPrerequisite, let token = cachedPreReq.searchToken, !token.isEmpty {
                 prerequisiteFuture = Future(value: cachedPreReq)
             } else {
                 prerequisiteFuture = self.fetchSearchPrerequisiteData()
@@ -514,7 +514,10 @@ extension Personalization {
                 .on(
                     success: { [weak self] preRequisite in
                         guard let self = self.guardSelf(promise: promise) else { return }
-                        self.searchPrerequisite = preRequisite
+                        
+                        if(preRequisite != self.searchPrerequisite) {
+                            self.searchPrerequisite = preRequisite
+                        }
                         self.fetchSearchData(
                             searchTerm: searchTerm,
                             limit: limit,
@@ -614,6 +617,7 @@ extension Personalization {
         let channel = account.getChannel()
         
         var searchToken: String? = nil
+        var actionId: String? = nil
         
         // Try to get actions and searchToken, log warnings on missing data
         if
@@ -626,7 +630,12 @@ extension Personalization {
                 if let token = searchAction.searchToken {
                     searchToken = token
                 } else {
-                    Log.warning(SearchError.missingActionProperties.localizedDescription)
+                    Log.warning(SearchError.missingSearchToken.localizedDescription)
+                }
+                if let obtActionId = searchAction.actionId {
+                    actionId = String(obtActionId)
+                } else {
+                    Log.warning(SearchError.missingActionId.localizedDescription)
                 }
             } else {
                 Log.warning(SearchError.noSearchActionFound(domain: account.getDomain()).localizedDescription)
@@ -635,7 +644,7 @@ extension Personalization {
             Log.warning(SearchError.noActionsFound.localizedDescription)
         }
         
-        return SearchPreRequisite(searchToken: searchToken, channelData: channel)
+        return SearchPreRequisite(channelData: channel, searchToken: searchToken, actionId: actionId)
     }
 
     
@@ -662,22 +671,23 @@ extension Personalization {
         let promise = Promise<APIResponse, Error>()
         
         do {
-            let reqId = isAutoSuggest ? ActionIdEnum.suggestionQuery.rawValue : ActionIdEnum.productSearch.rawValue
+            let reqId = isAutoSuggest ? RequestIdEnum.suggestionQuery.rawValue : RequestIdEnum.productSearch.rawValue
             let body = isAutoSuggest ? createAutoSuggestBody(searchTerm: searchTerm, limit: limit, searchToken: self.searchPrerequisite?.searchToken, withProduct: withProduct) : createSearchBody(searchTerm: searchTerm, limit: limit, searchToken: self.searchPrerequisite?.searchToken)
             let bodyDict = try body.toDictionary()
             
             self.callMonetateSiteSearchAPI(
                 endpoint: .search,
                 body: bodyDict,
-                channelData: searchPrerequisite?.channelData ?? "",
-                requestId: reqId).on (
-                    success: { response in
-                        promise.succeed(value: response)
-                    },
-                    failure: { err in
-                        promise.fail(error: err)
-                    }
-                )
+                requestId: reqId,
+                preRequisite: self.searchPrerequisite)
+            .on (
+                success: { response in
+                    promise.succeed(value: response)
+                },
+                failure: { err in
+                    promise.fail(error: err)
+                }
+            )
         } catch {
             promise.fail(error: error)
         }
@@ -755,25 +765,75 @@ extension Personalization {
             promise.fail(error: error)
             return promise.future
         }
-        
-        do {
-            let channel = account.getChannel()
-            let bodyDict = try TokenClickRequest(searchClickToken: searchToken).toDictionary()
-            let requestId = ActionIdEnum.reportTokenClick.rawValue
+        sdkQueue.async { [weak self] in
+            guard let self = self.guardSelf(promise: promise) else { return }
             
-            callMonetateSiteSearchAPI(endpoint: .reportClick, body: bodyDict, channelData: channel, requestId: requestId)
+            do {
+                let channel = self.account.getChannel()
+                let bodyDict = try TokenClickRequest(searchClickToken: searchToken).toDictionary()
+                let requestId = RequestIdEnum.reportTokenClick.rawValue
+                
+                self.callMonetateSiteSearchAPI(endpoint: .reportClick, body: bodyDict, requestId: requestId, preRequisite: SearchPreRequisite(channelData: channel))
+                    .on(
+                        success: { response in
+                            promise.succeed(value: response)
+                        },
+                        failure: { err in
+                            promise.fail(error: err)
+                        }
+                    )
+            } catch {
+                promise.fail(error: error)
+            }
+        }
+        
+        return promise.future
+    }
+    /**
+     Obtain the redirect urls from the backend service.
+     Using engine API for prerequisite and use site search API with actionId
+        
+     - Returns: A `Future` containing an `APIResponse` on success or an `Error` on failure.
+     */
+    
+    public func fetchURLRedirects() -> Future<APIResponse, Error>{
+        let promise = Promise<APIResponse, Error>()
+        
+        sdkQueue.async { [weak self] in
+            guard let self = self.guardSelf(promise: promise) else { return }
+            
+            let prerequisiteFuture: Future<SearchPreRequisite, Error>
+            if let cachedPreReq = self.searchPrerequisite, let actionId = cachedPreReq.actionId, !actionId.isEmpty {
+                prerequisiteFuture = Future(value: cachedPreReq)
+            } else {
+                prerequisiteFuture = self.fetchSearchPrerequisiteData()
+            }
+            
+            prerequisiteFuture
+                .observe(on: self.sdkQueue)
                 .on(
-                    success: { response in
-                        promise.succeed(value: response)
+                    success: { [weak self] preRequisite in
+                        guard let self = self.guardSelf(promise: promise) else { return }
+                        
+                        if(preRequisite != self.searchPrerequisite) {
+                            self.searchPrerequisite = preRequisite
+                        }
+                        let requestId = RequestIdEnum.urlRedirect.rawValue
+                        self.callMonetateSiteSearchAPI(endpoint: .urlRedirect, requestId: requestId, preRequisite: preRequisite)
+                            .on(
+                                success:{response in
+                                    promise.succeed(value: response)
+                                },
+                                failure: { err in
+                                    promise.fail(error: err)
+                                }
+                            )
                     },
                     failure: { err in
                         promise.fail(error: err)
                     }
                 )
-        } catch {
-            promise.fail(error: error)
         }
-        
         return promise.future
     }
     
@@ -782,31 +842,36 @@ extension Personalization {
      Makes an asynchronous API call to the Monetate site search API.
 
      This function constructs and sends a search request using the provided endpoint,
-     request body, channel information, and request identifier. It returns a `Future`
+     request body, prerequisite. It returns a `Future`
      that will eventually contain either a successful `APIResponse` or an `Error`.
 
      - Parameters:
        - endpoint: The API endpoint configuration to use for the request.
        - body: A dictionary representing the JSON payload to send in the request body.
-       - channelData: A string representing channel-specific data (e.g., platform or source).
        - requestId: A unique identifier for tracking the API request.
-
+       - preRequisite: Prerequsuite parameters obtained from engine API and Channel
+        - channelData: A string representing channel-specific data (e.g., platform or source).
+        - actionId:  A unique identifier of action obtained.
+     
      - Returns: A `Future` containing an `APIResponse` on success or an `Error` on failure.
      */
     private func callMonetateSiteSearchAPI(
         endpoint: APIConfig.Endpoint,
-        body: [String: Any],
-        channelData: String,
-        requestId: String
+        body: [String: Any]? = nil,
+        requestId: String,
+        preRequisite: SearchPreRequisite?
     ) -> Future<APIResponse, Error> {
         let promise = Promise<APIResponse, Error>()
-        let url = getSiteSearchURL(channel: channelData, endpoint: endpoint)
+        let url = getSiteSearchURL(endpoint: endpoint, preRequisite: preRequisite)
+        let method = endpoint.method()
         Log.debug("\(requestId) request URL - \(url)")
-        Log.debug("\(requestId) request body - \(body.toString ?? "nil"))")
+        if let body = body {
+            Log.debug("\(requestId) request body - \(body.toString ?? "nil"))")
+        }
         Service.getDecision(
             url: url,
+            method: method,
             body: body,
-            headers: nil,
             success: { data, statusCode, response in
                 let apiResponse = APIResponse(success: true, res: response, status: statusCode, data: data, requestId:requestId)
                 Log.debug("\(requestId) API success response - \(String(describing: apiResponse.data))")

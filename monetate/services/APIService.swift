@@ -21,23 +21,38 @@ struct APIConfig {
     enum Endpoint: String {
         case search
         case reportClick = "report-click"
+        case urlRedirect = "url-redirects"
         
         /// Builds path with given channel
-        func path(for channel: String = "") -> String {
+        func path(for channel: String) -> String {
             switch self {
             case .search, .reportClick:
-                return APIConfig.Paths.search + "\(channel)/\(self.rawValue)"
+                return Paths.search + "\(channel)/\(self.rawValue)"
+            case .urlRedirect:
+                return Paths.search + "\(channel)/\(self.rawValue)"
+            }
+        }
+        
+        func method() -> Method {
+            switch self {
+            case .search, .reportClick:
+                return .POST
+            case .urlRedirect:
+                return .GET
             }
         }
     }
 }
 
 
-func getSiteSearchURL(channel: String, endpoint: APIConfig.Endpoint) -> String {
+func getSiteSearchURL(endpoint: APIConfig.Endpoint, preRequisite: SearchPreRequisite?) -> String {
     var components = URLComponents()
     components.scheme = APIConfig.scheme
     components.host = APIConfig.domain
-    components.path = endpoint.path(for: channel)
+    components.path = endpoint.path(for: preRequisite?.channelData ?? "No channel")
+    if endpoint == .urlRedirect, let actionId = preRequisite?.actionId {
+        components.queryItems = [URLQueryItem(name: "actionId", value: "\(actionId)")]
+    }
     return components.url?.absoluteString ?? ""
 }
 
@@ -56,8 +71,9 @@ enum Method:String {
 class Service {
     static func getDecision(
         url: String,
-        body: [String: Any]?,
-        headers: [String: String]?,
+        method: Method = .POST,
+        body: [String: Any]? = nil,
+        headers: [String: String]? = nil,
         success: @escaping (Data, Int, URLResponse) -> Void,
         failure: @escaping (Error?, Data?, Int?, URLResponse?) -> Void
     ) {
@@ -67,7 +83,7 @@ class Service {
         }
         
         var request = URLRequest(url: url)
-        request.httpMethod = Method.POST.rawValue
+        request.httpMethod = method.rawValue
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
         if let headers = headers {

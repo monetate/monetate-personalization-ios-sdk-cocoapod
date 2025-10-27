@@ -35,8 +35,9 @@ public enum ActionTypeEnum: String {
     case searchAction = "monetate:action:SiteSearchApiAction"
 }
 
-public enum ActionIdEnum: String, Codable{
+public enum RequestIdEnum: String, Codable{
     case productSearch
     case suggestionQuery
     case reportTokenClick
+    case urlRedirect
 }
