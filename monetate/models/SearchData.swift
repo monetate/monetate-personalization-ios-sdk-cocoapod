@@ -9,13 +9,15 @@
 import Foundation
 
 /// Search prerequisite data
-public struct SearchPreRequisite {
-    public var searchToken: String?
-    public var channelData: String
-
-    public init(searchToken: String?, channelData: String) {
-        self.searchToken = searchToken
+struct SearchPreRequisite: Equatable {
+    var channelData: String
+    var searchToken: String?
+    var actionId: String?
+    
+    public init(channelData: String, searchToken: String? = nil, actionId: String? = nil) {
         self.channelData = channelData
+        self.searchToken = searchToken
+        self.actionId = actionId
     }
 }
 
@@ -47,7 +49,7 @@ struct SearchRequest: Codable {
     }
     
     struct RecordQuery: Codable {
-        let id: ActionIdEnum?
+        let id: RequestIdEnum?
         let typeOfRequest: TypeOfRequest?
         let settings: RecordSettings?
         
@@ -68,7 +70,7 @@ struct SearchRequest: Codable {
     }
     
     struct Suggestion: Codable {
-        let suggestionID: ActionIdEnum?
+        let suggestionID: RequestIdEnum?
         let typeOfQuery: TypeOfRequest?
         let query: String?
 
@@ -90,7 +92,8 @@ enum SearchError: LocalizedError {
     case invalidInput
     case noActionsFound
     case noSearchActionFound(domain: String)
-    case missingActionProperties
+    case missingSearchToken
+    case missingActionId
     case configurationFailed
     case fetchFailed
     case invalidClickToken
@@ -103,8 +106,10 @@ enum SearchError: LocalizedError {
             return "Execution Alert: No actions found in response data during search."
         case .noSearchActionFound(let domain):
             return "Execution Alert: No active search actions of type \"\(ActionTypeEnum.searchAction.rawValue)\" found for domain \"\(domain)\"."
-        case .missingActionProperties:
+        case .missingSearchToken:
             return "Execution Alert: Missing required searchToken parameter in action."
+        case .missingActionId:
+            return "Execution Alert: Missing required actionId parameter."
         case .configurationFailed:
             return "Configuration or network issue encountered. Ensure SDK is properly configured."
         case .fetchFailed:

@@ -8,14 +8,27 @@
 
 import Foundation
 
-struct MError : Error {
+struct MError : Error, LocalizedError {
     let timestamp = Date().toString("E dd MM YY HH:mm:ss")
     let description : String // class level
     let domain : ErrorDomain
     let info: [String: Any]?
+    
     var localizedDescription: String {
+        if let info = info,
+           let message = info["message"] as? String {
+            return message
+        }
         return NSLocalizedString(description, comment: "")
     }
+    
+    var errorDescription: String? {
+          if let info = info,
+             let message = info["message"] as? String {
+              return message
+          }
+          return NSLocalizedString(description, comment: "")
+      }
 }
 
 
