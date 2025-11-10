@@ -40,4 +40,5 @@ public enum RequestIdEnum: String, Codable{
     case suggestionQuery
     case reportTokenClick
     case urlRedirect
+    case categoryNavigation
 }
