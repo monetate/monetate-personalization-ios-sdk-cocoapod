@@ -21,6 +21,44 @@ struct SearchPreRequisite: Equatable {
     }
 }
 
+/// Site Search configuration parameters
+struct SiteSearchConfigParams {
+    var searchTerm: String?
+    var limit: Int?
+    var isAutoSuggest: Bool?
+    var returnProducts: Bool?
+    var isCategoryNavigation: Bool?
+    var categoryPath: String?
+    var offset: Int?
+
+    
+    // Custom convenience initializers
+    /// Search
+    init(forSearch searchTerm: String?, limit: Int?, offset: Int?){
+        self.searchTerm = searchTerm
+        self.limit = limit
+        self.offset = offset
+    }
+    
+    /// Autosuggest
+    init(forAutosuggest searchTerm: String?, limit:Int?, offset:Int?, isAutosuggest: Bool?, returnProducts: Bool?) {
+        self.searchTerm = searchTerm
+        self.limit = limit
+        self.offset = offset
+        self.isAutoSuggest = isAutosuggest
+        self.returnProducts = returnProducts
+    }
+    
+    /// Category Navigation
+    init(forCategoryNavigation categoryPath: String?, limit: Int?, offset: Int?, isCategoryNavigation: Bool?) {
+        self.categoryPath = categoryPath
+        self.limit = limit
+        self.offset = offset
+        self.isCategoryNavigation = isCategoryNavigation
+    }
+}
+
+
 /// Search API request model
 struct SearchRequest: Codable {
     let recordQueries: [RecordQuery]?
@@ -63,10 +101,23 @@ struct SearchRequest: Codable {
     struct RecordSettings: Codable {
         let query: QueryTerm?
         let limit: Int?
+        let offset: Int?
     }
     
     struct QueryTerm: Codable {
-        let term: String?
+        var term: String?
+        var categoryPath: String?
+        
+        // Custom convenience initializers
+        /// Search
+        init(forSearch term: String?) {
+            self.term = term
+        }
+        
+        ///  Category Navigation
+        init(forCategoryNav categoryPath: String?) {
+            self.categoryPath = categoryPath
+        }
     }
     
     struct Suggestion: Codable {
@@ -101,7 +152,7 @@ enum SearchError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .invalidInput:
-            return "Search input was empty or invalid limit. Please provide a valid search query."
+            return "Search input was empty or invalid. Please provide a valid search query."
         case .noActionsFound:
             return "Execution Alert: No actions found in response data during search."
         case .noSearchActionFound(let domain):

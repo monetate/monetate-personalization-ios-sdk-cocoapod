@@ -10,7 +10,7 @@ import Foundation
 
 final class EventQueueManager {
     private var queue: [ContextEnum: MEvent] = [:]
-    private let serialSyncQueue = DispatchQueue(label: "com.Monetate.serialSyncQueue")
+    private let serialSyncQueue = DispatchQueue(label: "sdk.Monetate.serialSyncQueue")
 
     func getQueueSnapshot() -> [ContextEnum: MEvent] {
         return serialSyncQueue.sync { queue }
@@ -36,3 +36,21 @@ final class EventQueueManager {
         }
     }
 }
+
+
+final class SearchPrerequisiteManager {
+    private var prerequisite: SearchPreRequisite?
+    private let serialSyncQueue = DispatchQueue(label: "sdk.Monetate.searchPrerequisite.serialSyncQueue")
+
+    func get() -> SearchPreRequisite? {
+        serialSyncQueue.sync { prerequisite }
+    }
+
+    func set(_ newValue: SearchPreRequisite?, completion: (() -> Void)? = nil) {
+        serialSyncQueue.async {
+            self.prerequisite = newValue
+            completion?()
+        }
+    }
+}
+

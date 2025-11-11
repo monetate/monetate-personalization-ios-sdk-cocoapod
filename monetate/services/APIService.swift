@@ -45,20 +45,24 @@ struct APIConfig {
 }
 
 
-func getSiteSearchURL(endpoint: APIConfig.Endpoint, preRequisite: SearchPreRequisite?) -> String {
+func getSiteSearchURL(endpoint: APIConfig.Endpoint, preRequisite: SearchPreRequisite?) -> String? {
     var components = URLComponents()
     components.scheme = APIConfig.scheme
     components.host = APIConfig.domain
     components.path = endpoint.path(for: preRequisite?.channelData ?? "No channel")
+    
     if endpoint == .urlRedirect, let actionId = preRequisite?.actionId {
         components.queryItems = [URLQueryItem(name: "actionId", value: "\(actionId)")]
     }
-    return components.url?.absoluteString ?? ""
+    
+    return components.url?.absoluteString
 }
+
 
 enum TypeOfRequest: String, Codable {
     case search = "SEARCH"
     case autoSuggestion = "AUTO_SUGGESTIONS"
+    case categoryNavigation = "CATNAV"
 }
 
 enum Method:String {

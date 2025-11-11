@@ -18,7 +18,7 @@ public class Personalization {
     private let eventQueueManager = EventQueueManager()
     private var errorQueue: [MError] = []
     
-    private var searchPrerequisite: SearchPreRequisite?
+    private let prerequisiteManager = SearchPrerequisiteManager()
     private let sdkQueue = DispatchQueue(label: "sdk.Monetate.processing", qos: .userInitiated)
     //constructor
     public init (account: Account, user: User) {
@@ -435,21 +435,33 @@ extension Personalization {
 extension Personalization {
     
     /**
-     Performs a search query and fetches results asynchronously.
+     Fetches Items based on the provided search term.
      
-     - Parameter searchTerm: The search query string. Must be non-empty string.
-     - Parameter limit: Maximum number of results to return. Defaults to 10.
+     This function validates the  search term, ensures prerequisite data is available,
+     and asynchronously performs a search query to fetch items.
+     
+     - Parameters:
+       - searchTerm: The search query string. Must be non-empty string.
+       - limit: Maximum number of results to return. Defaults to 10.
+       - offset:  Parameter used for pagination purpose. Defaults to 0.
      
      - Returns: A `Future` containing an `APIResponse` with search results or an error.
      */
     public func fetchSearchResults(
         searchTerm: String,
-        limit: Int = 10
+        limit: Int = 10,
+        offset: Int = 0
     ) -> Future<APIResponse, Error> {
-        return performSearchFeature(
-            searchTerm: searchTerm,
-            limit: limit
-        )
+        // Input validation
+        guard !searchTerm.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            let error = SearchError.invalidInput
+            Log.error(error.localizedDescription)
+            return Future(error: error)
+        }
+        
+        let searchParameters = SiteSearchConfigParams(
+            forSearch: searchTerm, limit: limit, offset: offset)
+        return performSearchFeature(searchConfig: searchParameters)
     }
     
     
@@ -462,6 +474,7 @@ extension Personalization {
          - Parameters:
             - searchTerm: The search query string. Must be a non-empty string.
             - limit: The maximum number of suggestions to return. Defaults to 10.
+            - offset: Parameter used for pagination purpose. Defaults to 0.
             - returnProducts: A flag indicating whether the search should include products. Defaults to `false`.
 
          - Returns: A `Future` containing an `APIResponse` with search results or an `Error` if the operation fails.
@@ -469,41 +482,69 @@ extension Personalization {
     public func fetchAutoSuggestion(
         searchTerm: String,
         limit: Int = 10,
+        offset: Int = 0,
         returnProducts: Bool = false
     ) -> Future<APIResponse, Error> {
+        // Input validation
+        guard !searchTerm.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            let error = SearchError.invalidInput
+            Log.error(error.localizedDescription)
+            return Future(error: error)
+        }
+
+        let autosuggestionParameters = SiteSearchConfigParams(forAutosuggest: searchTerm, limit: limit, offset: offset, isAutosuggest: true, returnProducts: returnProducts)
+        
         return performSearchFeature(
-            searchTerm: searchTerm,
-            limit: limit,
-            isAutoSuggest: true,
-            returnProducts: returnProducts
+            searchConfig: autosuggestionParameters
         )
     }
     
     /**
-     Private common function for Search Feature including Autosuggestion
+         Fetches Items based on the provided category path.
+
+         This function validates the  category path, ensures prerequisite data is available,
+         and asynchronously performs a search query to fetch items.
+
+         - Parameters:
+            - categoryPath: The path for a category string. Must be a non-empty string.
+            - limit: The maximum number of results to return. Defaults to 10.
+            - offset: Parameter used for pagination purpose. Defaults to 0.
+
+         - Returns: A `Future` containing an `APIResponse` with search results or an `Error` if the operation fails.
+         */
+    public func fetchCategoryNavigation(
+        categoryPath: String,
+        limit: Int = 10,
+        offset: Int = 0
+    ) -> Future<APIResponse, Error> {
+        
+        // Input validation
+        guard !categoryPath.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            let error = SearchError.invalidInput
+            Log.error(error.localizedDescription)
+            return Future(error: error)
+        }
+        
+        let categoryNavParameters = SiteSearchConfigParams(forCategoryNavigation: categoryPath, limit: limit, offset: offset, isCategoryNavigation: true)
+        
+        return performSearchFeature(searchConfig: categoryNavParameters)
+    }
+    
+    /**
+     Private common function for Search Feature, Autosuggestion, Category navigation.
      Implemented common prerequisite + searchData log
      */
     private func performSearchFeature(
-        searchTerm: String,
-        limit: Int,
-        isAutoSuggest: Bool = false,
-        returnProducts: Bool = false
+        searchConfig: SiteSearchConfigParams
     ) -> Future<APIResponse, Error> {
         let promise = Promise<APIResponse, Error>()
     
-        // Input validation: common for both methods
-        guard !searchTerm.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-            let error = SearchError.invalidInput
-            Log.error(error.localizedDescription)
-            promise.fail(error: error)
-            return promise.future
-        }
-    
         sdkQueue.async { [weak self] in
             guard let self = self.guardSelf(promise: promise) else { return }
-    
+            let cached = self.prerequisiteManager.get()
             let prerequisiteFuture: Future<SearchPreRequisite, Error>
-            if let cachedPreReq = self.searchPrerequisite, let token = cachedPreReq.searchToken, !token.isEmpty {
+            
+            if let cachedPreReq = cached, let token = cachedPreReq.searchToken, !token.isEmpty {
                 prerequisiteFuture = Future(value: cachedPreReq)
             } else {
                 prerequisiteFuture = self.fetchSearchPrerequisiteData()
@@ -515,14 +556,12 @@ extension Personalization {
                     success: { [weak self] preRequisite in
                         guard let self = self.guardSelf(promise: promise) else { return }
                         
-                        if(preRequisite != self.searchPrerequisite) {
-                            self.searchPrerequisite = preRequisite
+                        if cached != preRequisite {
+                            self.prerequisiteManager.set(preRequisite)
                         }
+                        
                         self.fetchSearchData(
-                            searchTerm: searchTerm,
-                            limit: limit,
-                            isAutoSuggest: isAutoSuggest,
-                            withProduct: returnProducts
+                            searchConfig: searchConfig
                         )
                         .on(
                             success: { apiResponse in
@@ -655,31 +694,26 @@ extension Personalization {
      eventually hold the API response or an error if request creation fails.
      
      - Parameters:
-       - searchTerm: The string term to search for.
-       - limit: The maximum number of results to return.
-       - isAutoSuggest:  A Boolean flag indicating whether the request is for autosuggestions (default is `false`).
-       - withProduct: A Boolean flag indicating whether to include product search results along with autosuggestions (default is `false`).
+       - searchConfig: The data set obtained for Search,Autosuggestion or Category navigation.
      
      - Returns: A `Future` containing an `APIResponse` or an `Error`.
      */
     private func fetchSearchData(
-        searchTerm: String,
-        limit: Int,
-        isAutoSuggest: Bool = false,
-        withProduct: Bool = false
+        searchConfig: SiteSearchConfigParams
     ) -> Future<APIResponse, Error> {
         let promise = Promise<APIResponse, Error>()
         
         do {
-            let reqId = isAutoSuggest ? RequestIdEnum.suggestionQuery.rawValue : RequestIdEnum.productSearch.rawValue
-            let body = isAutoSuggest ? createAutoSuggestBody(searchTerm: searchTerm, limit: limit, searchToken: self.searchPrerequisite?.searchToken, withProduct: withProduct) : createSearchBody(searchTerm: searchTerm, limit: limit, searchToken: self.searchPrerequisite?.searchToken)
+            let reqId = searchConfig.isAutoSuggest == true ? RequestIdEnum.suggestionQuery.rawValue : RequestIdEnum.productSearch.rawValue
+            let prereq = self.prerequisiteManager.get()
+            let body = searchConfig.isAutoSuggest == true ? createAutoSuggestBody(searchConfig: searchConfig, searchToken: prereq?.searchToken) : createSearchBody(searchConfig: searchConfig, searchToken: prereq?.searchToken)
             let bodyDict = try body.toDictionary()
             
             self.callMonetateSiteSearchAPI(
                 endpoint: .search,
                 body: bodyDict,
                 requestId: reqId,
-                preRequisite: self.searchPrerequisite)
+                preRequisite: prereq)
             .on (
                 success: { response in
                     promise.succeed(value: response)
@@ -698,22 +732,29 @@ extension Personalization {
      Creates a `SearchRequest` for performing a product search.
 
      This method builds the query term, record settings, and a record query using the provided
-     search term and limit. It returns a `SearchRequest` that contains the necessary data to
+     search term or Category navigation.
+     It returns a `SearchRequest` that contains the necessary data to
      perform a standard product search.
 
      - Parameters:
-       - searchTerm: The term to be used in the search query.
-       - limit: The maximum number of search results to return.
-       - searchToken: An optional token used to identify or track the search session.
+       - searchConfig: The data set obtained for Search or Category navigation.
+       - searchToken: The token obtained from Monetate engine API.
 
      - Returns: A `SearchRequest` object configured for product search.
      */
 
-    private func createSearchBody(searchTerm: String, limit: Int, searchToken: String?) -> SearchRequest {
-        let queryTerm = SearchRequest.QueryTerm(term: searchTerm)
-        let settings = SearchRequest.RecordSettings(query: queryTerm, limit: limit)
-        let recordQuery = SearchRequest.RecordQuery(id: .productSearch, typeOfRequest: .search, settings: settings)
-        return SearchRequest(recordQueries: [recordQuery], suggestions: [], searchToken: searchToken)
+    private func createSearchBody(searchConfig: SiteSearchConfigParams, searchToken: String?) -> SearchRequest {
+        if(searchConfig.isCategoryNavigation ?? false) {
+            let queryTerm = SearchRequest.QueryTerm(forCategoryNav: searchConfig.categoryPath)
+            let settings = SearchRequest.RecordSettings(query : queryTerm, limit: searchConfig.limit, offset: searchConfig.offset)
+            let recordQuery = SearchRequest.RecordQuery(id: .categoryNavigation, typeOfRequest: .categoryNavigation, settings: settings)
+            return SearchRequest(recordQueries: [recordQuery], suggestions: [], searchToken: searchToken)
+        } else {
+            let queryTerm = SearchRequest.QueryTerm(forSearch: searchConfig.searchTerm)
+            let settings = SearchRequest.RecordSettings(query: queryTerm, limit: searchConfig.limit, offset: searchConfig.offset)
+            let recordQuery = SearchRequest.RecordQuery(id: .productSearch, typeOfRequest: .search, settings: settings)
+            return SearchRequest(recordQueries: [recordQuery], suggestions: [], searchToken: searchToken)
+        }
     }
     
     /**
@@ -724,20 +765,18 @@ extension Personalization {
      Otherwise, it only includes the autosuggestion component.
 
      - Parameters:
-       - searchTerm: The term for which suggestions are to be retrieved.
-       - limit: The maximum number of product search results to include, if `withProduct` is `true`.
-       - searchToken: An optional token to track or associate the request.
-       - withProduct: A Boolean indicating whether to include product search data alongside suggestions.
+      - searchConfig: The data set obtained for Autosuggestion.
+      - searchToken: The token obtained from Monetate engine AP
 
      - Returns: A `SearchRequest` object configured for autosuggestion (and optionally product search).
      */
 
     
-    private func createAutoSuggestBody(searchTerm: String, limit: Int, searchToken: String?, withProduct: Bool) -> SearchRequest {
-        let suggestTerm = SearchRequest.Suggestion(suggestionID: .suggestionQuery, typeOfQuery: .autoSuggestion, query: searchTerm)
-        if(withProduct) {
-            let queryTerm = SearchRequest.QueryTerm(term: searchTerm)
-            let settings = SearchRequest.RecordSettings(query: queryTerm, limit: limit)
+    private func createAutoSuggestBody(searchConfig: SiteSearchConfigParams, searchToken: String?) -> SearchRequest {
+        let suggestTerm = SearchRequest.Suggestion(suggestionID: .suggestionQuery, typeOfQuery: .autoSuggestion, query: searchConfig.searchTerm)
+        if(searchConfig.returnProducts ?? false) {
+            let queryTerm = SearchRequest.QueryTerm(forSearch: searchConfig.searchTerm)
+            let settings = SearchRequest.RecordSettings(query: queryTerm, limit: searchConfig.limit, offset: searchConfig.offset)
             let recordQuery = SearchRequest.RecordQuery(id: .productSearch, typeOfRequest: .search, settings: settings)
             return SearchRequest(recordQueries: [recordQuery], suggestions: [suggestTerm], searchToken: searchToken)
         }
@@ -762,8 +801,7 @@ extension Personalization {
         guard !searchToken.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             let error = SearchError.invalidClickToken
             Log.error(error.localizedDescription)
-            promise.fail(error: error)
-            return promise.future
+            return Future(error: error)
         }
         sdkQueue.async { [weak self] in
             guard let self = self.guardSelf(promise: promise) else { return }
@@ -801,9 +839,10 @@ extension Personalization {
         
         sdkQueue.async { [weak self] in
             guard let self = self.guardSelf(promise: promise) else { return }
-            
+            let cached = self.prerequisiteManager.get()
             let prerequisiteFuture: Future<SearchPreRequisite, Error>
-            if let cachedPreReq = self.searchPrerequisite, let actionId = cachedPreReq.actionId, !actionId.isEmpty {
+            
+            if let cachedPreReq = cached, let actionId = cachedPreReq.actionId, !actionId.isEmpty {
                 prerequisiteFuture = Future(value: cachedPreReq)
             } else {
                 prerequisiteFuture = self.fetchSearchPrerequisiteData()
@@ -815,9 +854,11 @@ extension Personalization {
                     success: { [weak self] preRequisite in
                         guard let self = self.guardSelf(promise: promise) else { return }
                         
-                        if(preRequisite != self.searchPrerequisite) {
-                            self.searchPrerequisite = preRequisite
+                        
+                        if cached != preRequisite {
+                            self.prerequisiteManager.set(preRequisite)
                         }
+                        
                         let requestId = RequestIdEnum.urlRedirect.rawValue
                         self.callMonetateSiteSearchAPI(endpoint: .urlRedirect, requestId: requestId, preRequisite: preRequisite)
                             .on(
@@ -862,12 +903,19 @@ extension Personalization {
         preRequisite: SearchPreRequisite?
     ) -> Future<APIResponse, Error> {
         let promise = Promise<APIResponse, Error>()
-        let url = getSiteSearchURL(endpoint: endpoint, preRequisite: preRequisite)
+        guard let url = getSiteSearchURL(endpoint: endpoint, preRequisite: preRequisite),
+              !url.isEmpty else {
+            let error = NSError(domain: "API Error", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])
+            let mError = MError(description: error.localizedDescription, domain: .APIError, info: nil)
+            Log.error(error.localizedDescription)
+            return Future(error: mError)
+        }
+
         let method = endpoint.method()
         Log.debug("\(requestId) request URL - \(url)")
-        if let body = body {
-            Log.debug("\(requestId) request body - \(body.toString ?? "nil"))")
-        }
+        let bodyString = body?.toJSONString ?? "<nil>"
+        Log.debug("\(requestId) request body - \(bodyString)")
+
         Service.getDecision(
             url: url,
             method: method,

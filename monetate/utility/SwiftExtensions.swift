@@ -75,6 +75,16 @@ public extension Dictionary {
         
         return String(data: theJSONData, encoding: .utf8)
     }
+    
+    var toJSONString: String {
+           guard JSONSerialization.isValidJSONObject(self),
+                 let data = try? JSONSerialization.data(withJSONObject: self, options: [.prettyPrinted]),
+                 let str = String(data: data, encoding: .utf8) else {
+               return "<invalid JSON>"
+           }
+           return str
+       }
+    
     var toData: Data? {
         guard let data = try? JSONSerialization.data(withJSONObject: self,
                                                      options: [.prettyPrinted]) else { return nil }
