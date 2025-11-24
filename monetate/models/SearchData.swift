@@ -25,11 +25,10 @@ struct SearchPreRequisite: Equatable {
 struct SiteSearchConfigParams {
     var searchTerm: String?
     var limit: Int?
-    var isAutoSuggest: Bool?
-    var returnProducts: Bool?
-    var isCategoryNavigation: Bool?
+    var requestId: RequestIdEnum?
     var categoryPath: String?
     var offset: Int?
+    var typeOfRecords: [String]?
 
     
     // Custom convenience initializers
@@ -38,23 +37,32 @@ struct SiteSearchConfigParams {
         self.searchTerm = searchTerm
         self.limit = limit
         self.offset = offset
+        self.requestId = .productSearch
     }
     
     /// Autosuggest
-    init(forAutosuggest searchTerm: String?, limit:Int?, offset:Int?, isAutosuggest: Bool?, returnProducts: Bool?) {
+    init(forAutosuggest searchTerm: String?, limit:Int?, offset:Int?, returnProducts: Bool?) {
         self.searchTerm = searchTerm
         self.limit = limit
         self.offset = offset
-        self.isAutoSuggest = isAutosuggest
-        self.returnProducts = returnProducts
+        self.requestId = returnProducts ?? false ? .suggestionWithproducts : .suggestionQuery
     }
     
     /// Category Navigation
-    init(forCategoryNavigation categoryPath: String?, limit: Int?, offset: Int?, isCategoryNavigation: Bool?) {
+    init(forCategoryNavigation categoryPath: String?, limit: Int?, offset: Int?) {
         self.categoryPath = categoryPath
         self.limit = limit
         self.offset = offset
-        self.isCategoryNavigation = isCategoryNavigation
+        self.requestId = .categoryNavigation
+    }
+    
+    /// Content Search
+    init(forContentSearch searchTerm: String?, typeOfRecords: [String]?, limit:Int?, offset:Int?) {
+        self.searchTerm = searchTerm
+        self.typeOfRecords = typeOfRecords
+        self.limit = limit
+        self.offset = offset
+        self.requestId = .contentSearch
     }
 }
 
@@ -99,9 +107,27 @@ struct SearchRequest: Codable {
     }
     
     struct RecordSettings: Codable {
-        let query: QueryTerm?
-        let limit: Int?
-        let offset: Int?
+        var query: QueryTerm?
+        var limit: Int?
+        var offset: Int?
+        var typeOfRecords: [String]?
+        
+        // Custom convenience initializers
+        /// General settings
+        init(query: QueryTerm?, limit: Int?, offset: Int?) {
+            self.query = query
+            self.limit = limit
+            self.offset = offset
+        }
+        
+        /// Content Search
+        init(forContentSearch query: QueryTerm?,typeOfRecords: [String]?, limit: Int?, offset: Int?) {
+            self.query = query
+            self.typeOfRecords = typeOfRecords
+            self.limit = limit
+            self.offset = offset
+        }
+        
     }
     
     struct QueryTerm: Codable {
