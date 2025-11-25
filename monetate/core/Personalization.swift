@@ -20,6 +20,8 @@ public class Personalization {
     
     private let prerequisiteManager = SearchPrerequisiteManager()
     private let sdkQueue = DispatchQueue(label: "sdk.Monetate.processing", qos: .userInitiated)
+    private let requestBodyCreator = RequestBodyCreator()
+    
     //constructor
     public init (account: Account, user: User) {
         self.account = account
@@ -479,7 +481,7 @@ extension Personalization {
 
          - Returns: A `Future` containing an `APIResponse` with search results or an `Error` if the operation fails.
          */
-    public func fetchAutoSuggestion(
+    public func fetchAutoSuggestionResults(
         searchTerm: String,
         limit: Int = 10,
         offset: Int = 0,
@@ -492,7 +494,7 @@ extension Personalization {
             return Future(error: error)
         }
 
-        let autosuggestionParameters = SiteSearchConfigParams(forAutosuggest: searchTerm, limit: limit, offset: offset, isAutosuggest: true, returnProducts: returnProducts)
+        let autosuggestionParameters = SiteSearchConfigParams(forAutosuggest: searchTerm, limit: limit, offset: offset, returnProducts: returnProducts)
         
         return performSearchFeature(
             searchConfig: autosuggestionParameters
@@ -512,7 +514,7 @@ extension Personalization {
 
          - Returns: A `Future` containing an `APIResponse` with search results or an `Error` if the operation fails.
          */
-    public func fetchCategoryNavigation(
+    public func fetchCategoryNavigationResults(
         categoryPath: String,
         limit: Int = 10,
         offset: Int = 0
@@ -525,13 +527,46 @@ extension Personalization {
             return Future(error: error)
         }
         
-        let categoryNavParameters = SiteSearchConfigParams(forCategoryNavigation: categoryPath, limit: limit, offset: offset, isCategoryNavigation: true)
+        let categoryNavParameters = SiteSearchConfigParams(forCategoryNavigation: categoryPath, limit: limit, offset: offset)
         
         return performSearchFeature(searchConfig: categoryNavParameters)
     }
     
     /**
-     Private common function for Search Feature, Autosuggestion, Category navigation.
+         Fetches Items based on the provided content types.
+
+         This function validates the search term, ensures prerequisite data is available,
+         and asynchronously performs a search query to fetch items based on content types given.
+
+         - Parameters:
+           - searchTerm: The search query string. Must be a non-empty string.
+           - recordTypes: The types of items to be retrieved.
+           - limit: The maximum number of results to return. Defaults to 10.
+           - offset: Parameter used for pagination purpose. Defaults to 0.
+
+         - Returns: A `Future` containing an `APIResponse` with search results or an `Error` if the operation fails.
+         */
+     public func fetchContentSearchResults(
+        searchTerm: String,
+        recordTypes: [String],
+        limit: Int = 10,
+        offset: Int = 0
+    ) -> Future<APIResponse, Error> {
+        
+        // Input validation
+        guard !searchTerm.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            let error = SearchError.invalidInput
+            Log.error(error.localizedDescription)
+            return Future(error: error)
+        }
+        
+        let contentSearchParameters = SiteSearchConfigParams(forContentSearch: searchTerm, typeOfRecords: recordTypes, limit: limit, offset: offset)
+        
+        return performSearchFeature(searchConfig: contentSearchParameters)
+    }
+    
+    /**
+     Private common function for `Search Feature`,` Autosuggestion`, `Category navigation`, `Content search`.
      Implemented common prerequisite + searchData log
      */
     private func performSearchFeature(
@@ -704,9 +739,9 @@ extension Personalization {
         let promise = Promise<APIResponse, Error>()
         
         do {
-            let reqId = searchConfig.isAutoSuggest == true ? RequestIdEnum.suggestionQuery.rawValue : RequestIdEnum.productSearch.rawValue
+            let reqId = searchConfig.requestId?.rawValue ?? UUID().uuidString
             let prereq = self.prerequisiteManager.get()
-            let body = searchConfig.isAutoSuggest == true ? createAutoSuggestBody(searchConfig: searchConfig, searchToken: prereq?.searchToken) : createSearchBody(searchConfig: searchConfig, searchToken: prereq?.searchToken)
+            let body = requestBodyCreator.createRequestBody(searchConfig: searchConfig, searchToken: prereq?.searchToken)
             let bodyDict = try body.toDictionary()
             
             self.callMonetateSiteSearchAPI(
@@ -726,61 +761,6 @@ extension Personalization {
             promise.fail(error: error)
         }
         return promise.future
-    }
-
-    /**
-     Creates a `SearchRequest` for performing a product search.
-
-     This method builds the query term, record settings, and a record query using the provided
-     search term or Category navigation.
-     It returns a `SearchRequest` that contains the necessary data to
-     perform a standard product search.
-
-     - Parameters:
-       - searchConfig: The data set obtained for Search or Category navigation.
-       - searchToken: The token obtained from Monetate engine API.
-
-     - Returns: A `SearchRequest` object configured for product search.
-     */
-
-    private func createSearchBody(searchConfig: SiteSearchConfigParams, searchToken: String?) -> SearchRequest {
-        if(searchConfig.isCategoryNavigation ?? false) {
-            let queryTerm = SearchRequest.QueryTerm(forCategoryNav: searchConfig.categoryPath)
-            let settings = SearchRequest.RecordSettings(query : queryTerm, limit: searchConfig.limit, offset: searchConfig.offset)
-            let recordQuery = SearchRequest.RecordQuery(id: .categoryNavigation, typeOfRequest: .categoryNavigation, settings: settings)
-            return SearchRequest(recordQueries: [recordQuery], suggestions: [], searchToken: searchToken)
-        } else {
-            let queryTerm = SearchRequest.QueryTerm(forSearch: searchConfig.searchTerm)
-            let settings = SearchRequest.RecordSettings(query: queryTerm, limit: searchConfig.limit, offset: searchConfig.offset)
-            let recordQuery = SearchRequest.RecordQuery(id: .productSearch, typeOfRequest: .search, settings: settings)
-            return SearchRequest(recordQueries: [recordQuery], suggestions: [], searchToken: searchToken)
-        }
-    }
-    
-    /**
-     Creates a `SearchRequest` for fetching autosuggestions, with optional product search.
-
-     This method constructs a `SearchRequest` tailored for autosuggestion use cases.
-     If `withProduct` is `true`, it includes a product search query in addition to autosuggestions.
-     Otherwise, it only includes the autosuggestion component.
-
-     - Parameters:
-      - searchConfig: The data set obtained for Autosuggestion.
-      - searchToken: The token obtained from Monetate engine AP
-
-     - Returns: A `SearchRequest` object configured for autosuggestion (and optionally product search).
-     */
-
-    
-    private func createAutoSuggestBody(searchConfig: SiteSearchConfigParams, searchToken: String?) -> SearchRequest {
-        let suggestTerm = SearchRequest.Suggestion(suggestionID: .suggestionQuery, typeOfQuery: .autoSuggestion, query: searchConfig.searchTerm)
-        if(searchConfig.returnProducts ?? false) {
-            let queryTerm = SearchRequest.QueryTerm(forSearch: searchConfig.searchTerm)
-            let settings = SearchRequest.RecordSettings(query: queryTerm, limit: searchConfig.limit, offset: searchConfig.offset)
-            let recordQuery = SearchRequest.RecordQuery(id: .productSearch, typeOfRequest: .search, settings: settings)
-            return SearchRequest(recordQueries: [recordQuery], suggestions: [suggestTerm], searchToken: searchToken)
-        }
-       return SearchRequest(recordQueries: [], suggestions: [suggestTerm], searchToken: searchToken)
     }
     
     /**

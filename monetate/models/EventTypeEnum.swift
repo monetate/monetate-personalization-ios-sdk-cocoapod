@@ -31,14 +31,16 @@ public enum ContextEnum: String, MEvent {
     case RecImpressions = "monetate:record:RecImpressions"
 }
 
-public enum ActionTypeEnum: String {
+enum ActionTypeEnum: String {
     case searchAction = "monetate:action:SiteSearchApiAction"
 }
 
-public enum RequestIdEnum: String, Codable{
+enum RequestIdEnum: String, Codable{
     case productSearch
     case suggestionQuery
+    case suggestionWithproducts
+    case categoryNavigation
+    case contentSearch
     case reportTokenClick
     case urlRedirect
-    case categoryNavigation
 }
