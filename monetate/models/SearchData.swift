@@ -29,6 +29,7 @@ struct SiteSearchConfigParams {
     var categoryPath: String?
     var offset: Int?
     var typeOfRecords: [String]?
+    var filterFacets: JSONValue?
 
     
     // Custom convenience initializers
@@ -64,6 +65,14 @@ struct SiteSearchConfigParams {
         self.offset = offset
         self.requestId = .contentSearch
     }
+    
+    /// Filter Fetch
+    init(forFilterFetch searchTerm: String?, limit: Int?, filterFacets: JSONValue?) {
+        self.searchTerm = searchTerm
+        self.limit = limit
+        self.filterFacets = filterFacets
+        self.requestId = .filterFetch
+    }
 }
 
 
@@ -98,12 +107,39 @@ struct SearchRequest: Codable {
         let id: RequestIdEnum?
         let typeOfRequest: TypeOfRequest?
         let settings: RecordSettings?
+        var filterFacets: JSONValue?
         
         private enum CodingKeys: String, CodingKey {
             case id
             case typeOfRequest
             case settings
+            case filterFacets = "filters"
         }
+        
+        // Default initialiser
+        init(
+            id: RequestIdEnum?,
+            typeOfRequest: TypeOfRequest?,
+            settings: RecordSettings?
+        ) {
+            self.id = id
+            self.typeOfRequest = typeOfRequest
+            self.settings = settings
+        }
+        
+        // Custom convenience initializers
+        /// Filter Fetch
+        init(forFileterFetch
+                id: RequestIdEnum?,
+                typeOfRequest: TypeOfRequest?,
+                settings: RecordSettings?,
+                filterFacets: JSONValue?
+            ) {
+                self.id = id
+                self.typeOfRequest = typeOfRequest
+                self.settings = settings
+                self.filterFacets = filterFacets
+            }
     }
     
     struct RecordSettings: Codable {
@@ -128,6 +164,11 @@ struct SearchRequest: Codable {
             self.offset = offset
         }
         
+        /// Filter Fetch
+        init(forFilterFetch query: QueryTerm?, limit: Int?) {
+            self.query = query
+            self.limit = limit
+        }
     }
     
     struct QueryTerm: Codable {
