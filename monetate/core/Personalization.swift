@@ -591,10 +591,6 @@ extension Personalization {
                     success: { [weak self] preRequisite in
                         guard let self = self.guardSelf(promise: promise) else { return }
                         
-                        if cached != preRequisite {
-                            self.prerequisiteManager.set(preRequisite)
-                        }
-                        
                         self.fetchSearchData(
                             searchConfig: searchConfig
                         )
@@ -639,6 +635,7 @@ extension Personalization {
                     
                     do {
                         let searchPrerequisite = try self.extractSearchPreRequestInfo(from: responseData)
+                        self.prerequisiteManager.set(searchPrerequisite)
                         promise.succeed(value: searchPrerequisite)
                     } catch {
                         let err = (error as? SearchError) ?? error
@@ -646,6 +643,7 @@ extension Personalization {
                     }
                 },
                 failure: { error in
+                    self.prerequisiteManager.set(nil)
                     promise.fail(error: error)
                 }
             )
@@ -834,11 +832,6 @@ extension Personalization {
                     success: { [weak self] preRequisite in
                         guard let self = self.guardSelf(promise: promise) else { return }
                         
-                        
-                        if cached != preRequisite {
-                            self.prerequisiteManager.set(preRequisite)
-                        }
-                        
                         let requestId = RequestIdEnum.urlRedirect.rawValue
                         self.callMonetateSiteSearchAPI(endpoint: .urlRedirect, requestId: requestId, preRequisite: preRequisite)
                             .on(
@@ -856,6 +849,34 @@ extension Personalization {
                 )
         }
         return promise.future
+    }
+    
+    /**
+     Fetch search filters from the backend service.
+     Uses the search API with the given search term, limit, and filter JSON.
+     
+     - Parameters:
+        - searchTerm: The term to search for.
+        - limit: Maximum number of results to fetch.
+        - filterFacets: Filter criteria represented as `[String: Any]`.
+     
+     - Returns: A `Future` containing an `APIResponse` on success or an `Error` on failure.
+     */
+    public func fetchSearchFilters(
+        searchTerm: String,
+        limit: Int,
+        filterFacets: Any
+    ) -> Future<APIResponse, Error> {
+        // Input validation
+        guard !searchTerm.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            let error = SearchError.invalidInput
+            Log.error(error.localizedDescription)
+            return Future(error: error)
+        }
+        let filterJSONValue = JSONValue(filterFacets)
+        let filterParameters = SiteSearchConfigParams(
+            forFilterFetch: searchTerm, limit: limit, filterFacets: filterJSONValue)
+        return performSearchFeature(searchConfig: filterParameters)
     }
     
     

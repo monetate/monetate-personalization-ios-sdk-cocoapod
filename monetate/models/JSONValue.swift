@@ -53,6 +53,29 @@ public enum JSONValue: Codable, Equatable {
     
 }
 
+// MARK: - JSONValue initializer from Any / Dictionary / Array
+extension JSONValue {
+    /// Initialize from any value recursively
+    public init(_ value: Any) {
+        switch value {
+        case let v as String:
+            self = .string(v)
+        case let v as Int:
+            self = .int(v)
+        case let v as Double:
+            self = .double(v)
+        case let v as Bool:
+            self = .bool(v)
+        case let v as [Any]:
+            self = .array(v.map { JSONValue($0) })
+        case let v as [String: Any]:
+            self = .object(v.mapValues { JSONValue($0) })
+        default:
+            self = .null
+        }
+    }
+}
+
 extension JSONValue: ExpressibleByStringLiteral {
     public init(stringLiteral value: String) {
         self = .string(value)

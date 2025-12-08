@@ -36,7 +36,8 @@ final class RequestBodyCreator {
             
         case .contentSearch:
             return createContentSearchBody(searchConfig: searchConfig, searchToken: searchToken)
-            
+        case .filterFetch:
+            return createFilterFetch(searchConfig: searchConfig, searchToken: searchToken)
         default:
             return nil
         }
@@ -93,6 +94,13 @@ final class RequestBodyCreator {
         let queryTerm = SearchRequest.QueryTerm(forSearch: searchConfig.searchTerm)
         let settings = SearchRequest.RecordSettings(forContentSearch: queryTerm, typeOfRecords: searchConfig.typeOfRecords, limit: searchConfig.limit, offset: searchConfig.offset)
         let recordQuery = SearchRequest.RecordQuery(id: searchConfig.requestId, typeOfRequest: .search, settings: settings)
+        return SearchRequest(recordQueries: [recordQuery], suggestions: [], searchToken: searchToken)
+    }
+    
+    private func createFilterFetch(searchConfig: SiteSearchConfigParams, searchToken: String?) -> SearchRequest {
+        let queryTerm = SearchRequest.QueryTerm(forSearch: searchConfig.searchTerm)
+        let settings = SearchRequest.RecordSettings(forFilterFetch: queryTerm, limit: searchConfig.limit)
+        let recordQuery = SearchRequest.RecordQuery(forFileterFetch: searchConfig.requestId, typeOfRequest: .search, settings: settings, filterFacets: searchConfig.filterFacets)
         return SearchRequest(recordQueries: [recordQuery], suggestions: [], searchToken: searchToken)
     }
     

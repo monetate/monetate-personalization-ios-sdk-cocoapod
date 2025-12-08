@@ -43,4 +43,5 @@ enum RequestIdEnum: String, Codable{
     case contentSearch
     case reportTokenClick
     case urlRedirect
+    case filterFetch
 }
