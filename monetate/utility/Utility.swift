@@ -138,8 +138,11 @@ class Utility {
                 data = try? JSONEncoder().encode(val as? Purchase)
             case .DecisionRequest:
                 data = try? JSONEncoder().encode(val as? DecisionRequest)
-            default:
-                Log.error("Invalid event key\(key)")
+            case .Metadata:
+                data = try? JSONEncoder().encode(val as? Metadata)
+//                if let metadataObj = val as? Metadata {
+//                    data = metadataObj.encodeForLanguage()
+//                }
             }
             
             if let validData = data, let dict = validData.toJSON() {

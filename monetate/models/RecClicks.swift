@@ -18,10 +18,13 @@ public struct RecClicks: Codable, MEvent {
     /** An Array of rec tokens to be recorded.*/
     public var recClicks: [String]
     
-    public init(recClicks: [String]) {
+    public init?(recClicks: [String]) {
+        guard RecClicks.isValid(recClickIds: recClicks) else {
+            return nil
+        }
         eventType = "monetate:record:RecClicks"
         self.recClicks = recClicks
-        try! checkRecClicks()
+       // try! checkRecClicks()
     }
     
     func checkRecClicks () throws {
@@ -31,6 +34,16 @@ public struct RecClicks: Codable, MEvent {
             }
         }
     }
+    
+    private static func isValid(recClickIds: [String]) -> Bool {
+           guard !recClickIds.isEmpty else { return false }
+           for id in recClickIds {
+               if id.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                   return false
+               }
+           }
+           return true
+       }
 }
 
 enum RecClicksError : Error {

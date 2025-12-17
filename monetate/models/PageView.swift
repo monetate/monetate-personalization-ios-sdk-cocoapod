@@ -33,7 +33,10 @@ public struct PageView: Codable,Context {
     /** Breadcrumbs to filter against. Only matching actions will be evaluated.  */
     public var breadcrumbs: [String]?
     
-    public init(pageType: String, path: String?, url: String?, categories: [String]?, breadcrumbs: [String]?) {
+    public init?(pageType: String?, path: String?, url: String?, categories: [String]?, breadcrumbs: [String]?) {
+        guard let pageType = pageType else {
+            return nil
+        }
         self.pageType = pageType
         self.path = path
         self.url = url

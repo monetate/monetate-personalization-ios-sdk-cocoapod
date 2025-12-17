@@ -16,7 +16,10 @@ public class CustomVariables: Codable, Context {
     /** An array of custom variables. */
     public var customVariables: [CustomVariablesModel]
     
-    public init(customVariables: [CustomVariablesModel]) {
+    public init?(customVariables: [CustomVariablesModel]?) {
+        guard let customVariables = customVariables else {
+            return nil
+        }
         self.customVariables = customVariables
     }
     

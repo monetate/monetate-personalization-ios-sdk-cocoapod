@@ -53,7 +53,11 @@ public class Metadata: Codable, Context {
         self.metadata = metadata
     }
     
-    
+    public init(language: String) {
+        self.metadata = .object([
+            "language": .string(language)
+        ])
+    }
 }
 
 extension Encodable {

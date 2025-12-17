@@ -16,7 +16,10 @@ public class Cart: Codable, MEvent {
     
     public var cartLines: [CartLine]?
     
-    public init(cartLines: [CartLine]?) {
+    public init?(cartLines: [CartLine]?) {
+        guard let cartLines = cartLines else {
+            return nil
+        }
         eventType = "monetate:context:Cart"
         self.cartLines = cartLines
     }
@@ -32,7 +35,10 @@ public class Cart: Codable, MEvent {
 public class AddToCart: Codable, MEvent {
     public let eventType: String
     public var cartLines: [CartLine]?
-    public init(cartLines: [CartLine]?) {
+    public init?(cartLines: [CartLine]?) {
+        guard let cartLines = cartLines else {
+            return nil
+        }
         eventType = "monetate:context:AddToCart"
         self.cartLines = cartLines
     }

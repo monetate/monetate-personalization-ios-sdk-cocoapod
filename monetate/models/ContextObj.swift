@@ -16,13 +16,15 @@ enum ValidationError: LocalizedError {
     case missingCoordinates
     case missingMetaData
     case missingPageEvent(index: Int)
-    case missingPageType
+    case missingPageView
     case missingProductThumbnail(index: Int)
     case missingProductDetails(index: Int)
     case missingPurchaseData(index: Int)
     case missingCartData(index: Int)
     case missingSingleCartData
-
+    case missingImpressionData
+    case missingRecImpressiondata
+    case missingRecClickData
    
     var errorDescription: String? {
         switch self {
@@ -54,7 +56,7 @@ enum ValidationError: LocalizedError {
             }
             return "Execution Interrupted as data is missing, Please make sure if Page event at index \(index) is valid then try again."
             
-        case .missingPageType:
+        case .missingPageView:
             return "Execution Interuppted as data is missing, Please make sure if required PageDetails are is added and then try again"
             
         case .missingProductThumbnail(let index):
@@ -83,6 +85,15 @@ enum ValidationError: LocalizedError {
             
         case .missingSingleCartData:
             return "Execution Interuppted as data is missing, Please make sure if required CartLine's data is added and then try again"
+            
+        case .missingImpressionData:
+            return "Execution Interuppted as data is missing, Please make sure if required Impression's data is added and then try again"
+            
+        case .missingRecImpressiondata:
+            return "Execution Interuppted as data is missing, Please make sure if required RecImpression's data is added and then try again"
+            
+        case .missingRecClickData:
+            return "Execution Interuppted as data is missing, Please make sure if required RecClick's data is added and then try again"
         }
     }
 
@@ -137,8 +148,8 @@ public class ContextObj {
         }
     }
     
-    public func getIpAddress() -> IPAddress {
-        return IPAddress(ipAddress: self.ipAddress ?? "")
+    public func getIpAddress() -> IPAddress? {
+        return IPAddress(ipAddress: self.ipAddress)
     }
     
     // MARK: - User Agent
@@ -151,8 +162,8 @@ public class ContextObj {
         }
     }
     
-    public func getUserAgentData() -> UserAgent {
-        return UserAgent(userAgent: self.userAgentData ?? "")
+    public func getUserAgentData() -> UserAgent? {
+        return UserAgent(userAgent: self.userAgentData)
     }
     
     // MARK: - Screen Size
@@ -166,8 +177,8 @@ public class ContextObj {
         }
     }
     
-    public func getScreenSizeData () -> ScreenSize {
-        return ScreenSize(height: screenHeight ?? 0, width: screenWidth ?? 0)
+    public func getScreenSizeData () -> ScreenSize? {
+        return ScreenSize(height: screenHeight, width: screenWidth)
     }
     
     // MARK: - Custom Variables
@@ -180,8 +191,8 @@ public class ContextObj {
         }
     }
     
-    public func getCustomVariablesData() -> CustomVariables {
-        return CustomVariables(customVariables: self.customVariables ?? [])
+    public func getCustomVariablesData() -> CustomVariables? {
+        return CustomVariables(customVariables: self.customVariables)
     }
     
     // MARK: - Coordinates
@@ -195,8 +206,8 @@ public class ContextObj {
         }
     }
     
-    public func getCoordinatesData() -> Coordinates {
-        return Coordinates(latitude: latitude ?? "", longitude: longitude ?? "")
+    public func getCoordinatesData() -> Coordinates? {
+        return Coordinates(latitude: latitude, longitude: longitude)
     }
     
     // MARK: - Language / MetaData
@@ -209,8 +220,11 @@ public class ContextObj {
         }
     }
     
-    public func getMetaData() -> Metadata {
-        return Metadata(metadata: .string(language?.language ?? ""))
+    public func getMetaData() -> Metadata? {
+        guard let languageString = language?.language else {
+            return nil
+        }
+        return Metadata(language: languageString)
     }
     
     // MARK: - Page Events
@@ -223,8 +237,11 @@ public class ContextObj {
         }
     }
     
-    public func getPageEventsData() -> PageEvents {
-        return PageEvents(pageEvents: Set(self.pageEvents ?? []))
+    public func getPageEventsData() -> PageEvents? {
+        guard let pageEventsArray = self.pageEvents else {
+            return nil
+        }
+        return PageEvents(pageEvents: Set(pageEventsArray))
     }
     
     // MARK: - Page View
@@ -241,8 +258,8 @@ public class ContextObj {
         }
     }
     
-    public func getPageDetails() -> PageView {
-        return PageView(pageType: pageType ?? "", path: path, url: url, categories: categories, breadcrumbs: breadcrumbs)
+    public func getPageDetails() -> PageView? {
+        return PageView(pageType: pageType, path: path, url: url, categories: categories, breadcrumbs: breadcrumbs)
     }
     
     // MARK: - Product Thumbnails
@@ -255,8 +272,11 @@ public class ContextObj {
         }
     }
     
-    public func getProductThumbnailsData() -> ProductThumbnailView {
-        return ProductThumbnailView(products: Set(self.productsThumbnail ?? []))
+    public func getProductThumbnailsData() -> ProductThumbnailView? {
+        guard let productThumbnailArray = self.productsThumbnail else {
+            return nil
+        }
+        return ProductThumbnailView(products: Set(productThumbnailArray))
     }
     
     // MARK: - Product Details
@@ -269,7 +289,7 @@ public class ContextObj {
         }
     }
     
-    public func getProductDetails() -> ProductDetailView {
+    public func getProductDetails() -> ProductDetailView? {
         return ProductDetailView(products: productsData)
     }
     
@@ -284,8 +304,8 @@ public class ContextObj {
         }
     }
     
-    public func getPurchaseData() -> Purchase {
-        return Purchase(account: "", domain: "", instance: "", purchaseId: purchaseId ?? "", purchaseLines: purchaseData)
+    public func getPurchaseData() -> Purchase? {
+        return Purchase(account: "", domain: "", instance: "", purchaseId: purchaseId, purchaseLines: purchaseData)
     }
     
     // MARK: - Cart
@@ -302,8 +322,8 @@ public class ContextObj {
         }
     }
     
-    public func getAllCartData() -> [CartLine] {
-        return cartLines ?? []
+    public func getAllCartData() -> [CartLine]? {
+        return cartLines
     }
     
     // MARK: - Single Cart
@@ -418,7 +438,7 @@ extension ContextObj {
     // Validate PageView
     func validatePageViewData(pageType: String?, url: String?, categories: [String]?, breadcrumbs: [String]?, path: String?) throws {
         guard let pageType = pageType, !pageType.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-            throw ValidationError.missingPageType
+            throw ValidationError.missingPageView
         }
     }
     
@@ -495,4 +515,19 @@ extension ContextObj {
         }
     }
 }
+
+/// getAction error handler
+enum GetActionError: LocalizedError {
+    case noActionFound
+    case invalidResponse
+    var errorDescription: String? {
+        switch self {
+        case .invalidResponse:
+            return "Execution Alert: Invalid response format from server."
+        case .noActionFound:
+            return "Execution Alert: No active actions found."
+        }
+    }
+}
+
 

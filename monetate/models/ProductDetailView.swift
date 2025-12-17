@@ -15,7 +15,10 @@ public class ProductDetailView: Codable, MEvent {
     /** The list of products and product specific details being viewed. */
     public var products: [Product]?
     
-    public init(products: [Product]?) {
+    public init?(products: [Product]?) {
+        guard let products = products else {
+            return nil
+        }
         eventType = "monetate:context:ProductDetailView"
         self.products = products
     }

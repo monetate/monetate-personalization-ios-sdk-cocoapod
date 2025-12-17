@@ -17,10 +17,13 @@ public struct Impressions: Codable, MEvent {
     /** A list of impression identifier strings. */
     public var impressionIds: [String]
     
-    public init(impressionIds: [String]) {
+    public init?(impressionIds: [String]) {
+        guard Impressions.isValid(impressionIds: impressionIds) else {
+            return nil
+        }
         eventType = "monetate:record:Impressions"
         self.impressionIds = impressionIds
-        try! checkImpressions()
+        // try! checkImpressions()
     }
     
     func checkImpressions () throws {
@@ -30,6 +33,19 @@ public struct Impressions: Codable, MEvent {
             }
         }
     }
+    
+    // Static validation function
+       private static func isValid(impressionIds: [String]) -> Bool {
+           // Check that array is not empty and no string is empty
+           guard !impressionIds.isEmpty else { return false }
+           for id in impressionIds {
+               if id.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                   return false
+               }
+           }
+           return true
+       }
+
 }
 
 enum ImpressionsError : Error {

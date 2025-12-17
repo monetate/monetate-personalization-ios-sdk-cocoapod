@@ -24,14 +24,25 @@ public struct Referrer: Codable, Context {
     /** The referring URL */
     public var referrer: String
     
-    public init(referrer: String) {
+    public init?(referrer: String) {
+        guard Referrer.isValid(referrer: referrer) else {
+            return nil
+        }
         eventType = "monetate:context:Referrer"
         self.referrer = referrer
-        try! checkReferrer()
+       // try! checkReferrer()
     }
     
     func checkReferrer () throws {
         if (referrer == "") {throw ReferrerError.referrer(description: "Invalid referrer")}
+    }
+    
+    // Static validation function
+    private static func isValid(referrer: String) -> Bool {
+        if referrer.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            return false
+        }
+        return true
     }
 }
 

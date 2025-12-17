@@ -34,13 +34,28 @@ public class User :Codable {
         }
         self.customerId = customerId
         
-        try! checkMonetateIDAndDeviceID()
+        do {
+            try checkMonetateIDAndDeviceID()
+        } catch {
+            Log.error(error.localizedDescription)
+        }
     }
     
-    func checkMonetateIDAndDeviceID () throws {
-        if ((monetateId != nil) && monetateId == "") {throw UserIdError.monetateID(description: "Invalid monetateId")}
-        if ((deviceId != nil) && deviceId == "") {throw UserIdError.deviceID(description: "Invalid deviceId")}
-        if (monetateId == nil && deviceId == nil) {throw UserIdError.UserID(description: "monetateId or deviceId, anyone is required")}
+    func checkMonetateIDAndDeviceID() throws {
+        // If monetateId is non-nil but empty
+        if let monetateId = monetateId, monetateId.isEmpty {
+            throw UserIdError.monetateID(description: "Invalid monetateId")
+        }
+        
+        // If deviceId is non-nil but empty
+        if let deviceId = deviceId, deviceId.isEmpty {
+            throw UserIdError.deviceID(description: "Invalid deviceId")
+        }
+        
+        // If both are nil
+        if monetateId == nil && deviceId == nil {
+            throw UserIdError.userID(description: "Either monetateId or deviceId is required")
+        }
     }
     
     public func setCustomerId (customerId: String) {
@@ -49,7 +64,7 @@ public class User :Codable {
 }
 
 enum UserIdError : Error {
-    case UserID(description: String)
+    case userID(description: String)
     case monetateID(description: String)
     case deviceID(description: String)
 }

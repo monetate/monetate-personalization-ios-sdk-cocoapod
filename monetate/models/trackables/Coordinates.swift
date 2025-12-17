@@ -25,7 +25,10 @@ public class Coordinates : Context, Codable {
     /** Device longitude */
     public var longitude: String = ""
     
-    public init(latitude: String, longitude: String) {
+    public init?(latitude: String?, longitude: String?) {
+        guard let latitude = latitude, let longitude = longitude else {
+            return nil
+        }
         self.latitude = latitude
         self.longitude = longitude
         self.eventType = "monetate:context:Coordinates"

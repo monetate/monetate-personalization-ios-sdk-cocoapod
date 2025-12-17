@@ -24,7 +24,10 @@ public struct UserAgent: Context, Codable {
     /** The user-agent header value */
     public var userAgent: String
     
-    public init(userAgent: String) {
+    public init?(userAgent: String?) {
+        guard let userAgent = userAgent else {
+                return nil
+            }
         eventType = "monetate:context:UserAgent"
         self.userAgent = userAgent
        // try! checkUserAgent()

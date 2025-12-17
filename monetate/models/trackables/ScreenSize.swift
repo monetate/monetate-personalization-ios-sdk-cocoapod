@@ -25,7 +25,10 @@ public class ScreenSize : Context,Codable {
     /** screen width in pixels */
     public var width: Int
     
-    public init(height: Int, width: Int) {
+    public init?(height: Int?, width: Int?) {
+        guard let height = height, let width = width else {
+            return nil
+        }
         eventType = "monetate:context:ScreenSize"
         self.height = height
         self.width = width
