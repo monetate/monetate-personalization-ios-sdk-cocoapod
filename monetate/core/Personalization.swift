@@ -100,7 +100,12 @@ public class Personalization {
     }
     
     public func setCustomerId (customerId: String) {
+        guard !customerId.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            Log.error(UserIdError.invalidCustomerId.localizedDescription)
+            return
+        }
         self.user.setCustomerId(customerId: customerId)
+        _ = self.callMonetateAPI()
     }
     /// Supported until version 2025.08.01
      /**
@@ -486,8 +491,7 @@ extension Personalization {
                             includeReporting: Bool
     ) -> Future<[[String: Any]], Error> {
         let promise = Promise <[[String: Any]], Error>()
-        
-        setEventData(context: context)
+        addEventData(context: context)
         getActionsData(requestId: requestId, includeReporting: includeReporting, arrActionTypes: arrActionTypes)
             .observe(on: self.sdkQueue)
             .on { [weak self] responseData in
@@ -507,7 +511,7 @@ extension Personalization {
      Used to fetch available context data
      - Parameter context: Context object with relevent data
      */
-    private func setEventData(context: ContextObj) {
+    private func addEventData(context: ContextObj) {
         
         if let coordinates = context.getCoordinatesData() {
             addEvent(context: .Coordinates, event: coordinates)
@@ -568,7 +572,7 @@ extension Personalization {
      Used to fetch Actions data from API response
      - Parameter response: API response obtained from engine API
      */
-    func filterActionsData(response: APIResponse) throws -> [[String: Any]] {
+    private func filterActionsData(response: APIResponse) throws -> [[String: Any]] {
         
         // Convert response.data → Dictionary
         let root: [String: Any]
@@ -584,18 +588,18 @@ extension Personalization {
             throw GetActionError.invalidResponse
         }
         
-        // Traverse JSON and return actions
-        guard
-            let data = root["data"] as? [String: Any],
-            let responses = data["responses"] as? [[String: Any]],
-            let firstResponse = responses.first,
-            let actions = firstResponse["actions"] as? [[String: Any]],
-            !actions.isEmpty
-        else {
-            throw GetActionError.noActionFound
+        // Traverse responses array until actions found
+        if let data = root["data"] as? [String: Any],
+           let responses = data["responses"] as? [[String: Any]] {
+            for responseItem in responses {
+                if let actions = responseItem["actions"] as? [[String: Any]], !actions.isEmpty {
+                    return actions
+                }
+            }
         }
-        
-        return actions
+
+        // No actions found in any response
+        return []
     }
 }
 
@@ -615,7 +619,7 @@ extension Personalization {
      
      - Returns: A `Future` containing an `APIResponse` with search results or an error.
      */
-    public func fetchSearchResults(
+    private func fetchSearchResults(
         searchTerm: String,
         limit: Int = 10,
         offset: Int = 0
@@ -647,7 +651,7 @@ extension Personalization {
 
          - Returns: A `Future` containing an `APIResponse` with search results or an `Error` if the operation fails.
          */
-    public func fetchAutoSuggestionResults(
+    private func fetchAutoSuggestionResults(
         searchTerm: String,
         limit: Int = 10,
         offset: Int = 0,
@@ -680,7 +684,7 @@ extension Personalization {
 
          - Returns: A `Future` containing an `APIResponse` with search results or an `Error` if the operation fails.
          */
-    public func fetchCategoryNavigationResults(
+    private func fetchCategoryNavigationResults(
         categoryPath: String,
         limit: Int = 10,
         offset: Int = 0
@@ -712,7 +716,7 @@ extension Personalization {
 
          - Returns: A `Future` containing an `APIResponse` with search results or an `Error` if the operation fails.
          */
-     public func fetchContentSearchResults(
+     private func fetchContentSearchResults(
         searchTerm: String,
         recordTypes: [String],
         limit: Int = 10,
@@ -937,7 +941,7 @@ extension Personalization {
 
      - Returns: A `Future` that completes with an `APIResponse` on success, or an `Error` on failure.
      */
-    public func reportSearchClickToken(
+    private func reportSearchClickToken(
         searchToken: String
     ) -> Future<APIResponse, Error> {
         let promise = Promise<APIResponse, Error>()
@@ -978,7 +982,7 @@ extension Personalization {
      - Returns: A `Future` containing an `APIResponse` on success or an `Error` on failure.
      */
     
-    public func fetchURLRedirects() -> Future<APIResponse, Error>{
+    private func fetchURLRedirects() -> Future<APIResponse, Error>{
         let promise = Promise<APIResponse, Error>()
         
         sdkQueue.async { [weak self] in
@@ -1028,7 +1032,7 @@ extension Personalization {
      
      - Returns: A `Future` containing an `APIResponse` on success or an `Error` on failure.
      */
-    public func fetchSearchFilters(
+    private func fetchSearchFilters(
         searchTerm: String,
         limit: Int,
         filterFacets: Any

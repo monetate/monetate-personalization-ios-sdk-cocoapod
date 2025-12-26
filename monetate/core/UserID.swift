@@ -25,13 +25,7 @@ public class User :Codable {
      */
     public init(monetateId:String?=nil, deviceId: String? = nil, customerId: String? = nil) {
         self.monetateId = monetateId
-        if let val = monetateId{
-            self.monetateId = val
-        }
         self.deviceId = deviceId
-        if let val = deviceId {
-            self.deviceId = val
-        }
         self.customerId = customerId
         
         do {
@@ -43,12 +37,12 @@ public class User :Codable {
     
     func checkMonetateIDAndDeviceID() throws {
         // If monetateId is non-nil but empty
-        if let monetateId = monetateId, monetateId.isEmpty {
+        if let monetateId = monetateId, monetateId.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             throw UserIdError.monetateID(description: "Invalid monetateId")
         }
         
         // If deviceId is non-nil but empty
-        if let deviceId = deviceId, deviceId.isEmpty {
+        if let deviceId = deviceId, deviceId.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             throw UserIdError.deviceID(description: "Invalid deviceId")
         }
         
@@ -63,8 +57,18 @@ public class User :Codable {
     }
 }
 
-enum UserIdError : Error {
+enum UserIdError : LocalizedError {
     case userID(description: String)
     case monetateID(description: String)
     case deviceID(description: String)
+    case invalidCustomerId
+    
+    var errorDescription: String? {
+        switch self {
+        case .userID(let desc), .monetateID(let desc), .deviceID(let desc):
+            return desc
+        case .invalidCustomerId:
+            return "Invalid customer id"
+        }
+    }
 }

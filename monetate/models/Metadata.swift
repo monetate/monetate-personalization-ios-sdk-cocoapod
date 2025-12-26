@@ -54,9 +54,9 @@ public class Metadata: Codable, Context {
     }
     
     public init(language: String) {
-        self.metadata = .object([
+        self.metadata = [
             "language": .string(language)
-        ])
+        ]
     }
 }
 
