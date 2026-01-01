@@ -480,18 +480,17 @@ extension Personalization {
      
      - Parameters:
       - context: The context object containing necessary environment or configuration.
-      - requestId:  A unique identifier for this request, used for tracking or logging.
       - arrActionTypes: An array of action type strings to fetch. Must not be empty.
       - includeReporting: A Boolean indicating whether to include reporting-related actions.
      */
     
     public func getActions (context:ContextObj,
-                            requestId: String,
                             arrActionTypes:[String],
                             includeReporting: Bool
     ) -> Future<[[String: Any]], Error> {
         let promise = Promise <[[String: Any]], Error>()
         addEventData(context: context)
+        let requestId = generateRequestId()
         getActionsData(requestId: requestId, includeReporting: includeReporting, arrActionTypes: arrActionTypes)
             .observe(on: self.sdkQueue)
             .on { [weak self] responseData in
