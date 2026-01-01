@@ -133,7 +133,7 @@ public class Personalization {
      
      eventData is data associated with event and it is optional parameter.
      */
-    public func report (context:ContextEnum, event: MEvent?) {
+    private func report (context:ContextEnum, event: MEvent?) {
         guard let event = event else {
             self.timer?.resume()
             return
@@ -239,7 +239,7 @@ public class Personalization {
      context and eventData are optional fields.
      
      */
-    public func addEvent(context:ContextEnum, event: MEvent?) {
+    private func addEvent(context:ContextEnum, event: MEvent?) {
         if let event = event {
             Utility.processEvent(context: context, data: event, mqueue: self.eventQueueManager.getQueueSnapshot()).on(success: {[weak self] (queue) in
                 // Update the entire queue snapshot
@@ -260,7 +260,7 @@ public class Personalization {
      status is the value returned from {meta: {code: ###}}. Anything other than 200 does not include actions in the return.
      
      */
-    public func getActionsData(requestId: String, includeReporting: Bool, arrActionTypes:[String]) -> Future<APIResponse, Error>  {
+    private func getActionsData(requestId: String, includeReporting: Bool, arrActionTypes:[String]) -> Future<APIResponse, Error>  {
         let promise = Promise <APIResponse, Error>()
         processDecision(requestId, includeReporting, arrActionTypes, promise)
         return promise.future
