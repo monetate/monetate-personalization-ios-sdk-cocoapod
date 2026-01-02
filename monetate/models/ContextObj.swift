@@ -16,13 +16,15 @@ enum ValidationError: LocalizedError {
     case missingCoordinates
     case missingMetaData
     case missingPageEvent(index: Int)
-    case missingPageType
+    case missingPageView
     case missingProductThumbnail(index: Int)
     case missingProductDetails(index: Int)
     case missingPurchaseData(index: Int)
     case missingCartData(index: Int)
     case missingSingleCartData
-
+    case missingImpressionData
+    case missingRecImpressiondata
+    case missingRecClickData
    
     var errorDescription: String? {
         switch self {
@@ -54,7 +56,7 @@ enum ValidationError: LocalizedError {
             }
             return "Execution Interrupted as data is missing, Please make sure if Page event at index \(index) is valid then try again."
             
-        case .missingPageType:
+        case .missingPageView:
             return "Execution Interuppted as data is missing, Please make sure if required PageDetails are is added and then try again"
             
         case .missingProductThumbnail(let index):
@@ -83,6 +85,15 @@ enum ValidationError: LocalizedError {
             
         case .missingSingleCartData:
             return "Execution Interuppted as data is missing, Please make sure if required CartLine's data is added and then try again"
+            
+        case .missingImpressionData:
+            return "Execution Interuppted as data is missing, Please make sure if required Impression's data is added and then try again"
+            
+        case .missingRecImpressiondata:
+            return "Execution Interuppted as data is missing, Please make sure if required RecImpression's data is added and then try again"
+            
+        case .missingRecClickData:
+            return "Execution Interuppted as data is missing, Please make sure if required RecClick's data is added and then try again"
         }
     }
 
@@ -128,187 +139,147 @@ public class ContextObj {
     }
     
     // MARK: - IP Address
-    public func addIpAddress(_ ipAddress: String?) {
-        do {
+    public func addIpAddress(_ ipAddress: String?) throws {
             try validateIpData(ipData: ipAddress)
             self.ipAddress = ipAddress
-        } catch {
-            Log.error(error.localizedDescription)
-        }
     }
     
-    public func getIpAddress() -> IPAddress {
-        return IPAddress(ipAddress: self.ipAddress ?? "")
+    func getIpAddress() -> IPAddress? {
+        return IPAddress(ipAddress: self.ipAddress)
     }
     
     // MARK: - User Agent
-    public func addUserAgentData(_ data: String?) {
-        do {
-            try validateUserAgentData(userAgent: data)
-            self.userAgentData = data
-        } catch {
-            Log.error(error.localizedDescription)
-        }
+    public func addUserAgentData(_ data: String?) throws {
+        try validateUserAgentData(userAgent: data)
+        self.userAgentData = data
     }
     
-    public func getUserAgentData() -> UserAgent {
-        return UserAgent(userAgent: self.userAgentData ?? "")
+    func getUserAgentData() -> UserAgent? {
+        return UserAgent(userAgent: self.userAgentData)
     }
     
     // MARK: - Screen Size
-    public func addScreenSizeData(screenHeight: Int?, screenWidth: Int?) {
-        do {
-            try validateScreenSizeData(heightData: screenHeight, widthData: screenWidth)
-            self.screenHeight = screenHeight
-            self.screenWidth = screenWidth
-        } catch {
-            Log.error(error.localizedDescription)
-        }
+    public func addScreenSizeData(screenHeight: Int?, screenWidth: Int?) throws  {
+         try validateScreenSizeData(heightData: screenHeight, widthData: screenWidth)
+        self.screenHeight = screenHeight
+        self.screenWidth = screenWidth
     }
     
-    public func getScreenSizeData () -> ScreenSize {
-        return ScreenSize(height: screenHeight ?? 0, width: screenWidth ?? 0)
+    func getScreenSizeData () -> ScreenSize? {
+        return ScreenSize(height: screenHeight, width: screenWidth)
     }
     
     // MARK: - Custom Variables
-    public func addCustomVariablesData(_ customVariables: [CustomVariablesModel]?) {
-        do {
+    public func addCustomVariablesData(_ customVariables: [CustomVariablesModel]?) throws {
             try validateCustomVariables(customVariables)
             self.customVariables = customVariables
-        } catch {
-            Log.error(error.localizedDescription)
-        }
     }
     
-    public func getCustomVariablesData() -> CustomVariables {
-        return CustomVariables(customVariables: self.customVariables ?? [])
+    func getCustomVariablesData() -> CustomVariables? {
+        return CustomVariables(customVariables: self.customVariables)
     }
     
     // MARK: - Coordinates
-    public func addCoordinatesData(latitude: String?, longitude: String?) {
-        do {
+    public func addCoordinatesData(latitude: String?, longitude: String?) throws {
             try validateCoordinatesData(latitudeData: latitude, longitudeData: longitude)
             self.latitude = latitude
             self.longitude = longitude
-        } catch {
-            Log.error(error.localizedDescription)
-        }
     }
     
-    public func getCoordinatesData() -> Coordinates {
-        return Coordinates(latitude: latitude ?? "", longitude: longitude ?? "")
+    func getCoordinatesData() -> Coordinates? {
+        return Coordinates(latitude: latitude, longitude: longitude)
     }
     
     // MARK: - Language / MetaData
-    public func addMetaData(language: Language?) {
-        do {
+    public func addMetaData(language: Language?) throws {
             try validateMetaData(language)
             self.language = language
-        } catch {
-            Log.error(error.localizedDescription)
-        }
     }
     
-    public func getMetaData() -> Metadata {
-        return Metadata(metadata: .string(language?.language ?? ""))
+    func getMetaData() -> Metadata? {
+        guard let languageString = language?.language else {
+            return nil
+        }
+        return Metadata(language: languageString)
     }
     
     // MARK: - Page Events
-    public func addPageEventsData(_ pageEventsData: [String]?) {
-        do {
+    public func addPageEventsData(_ pageEventsData: [String]?) throws {
             try validatePageEventsData(pageEventsData)
             self.pageEvents = pageEventsData
-        } catch {
-            Log.error(error.localizedDescription)
-        }
     }
     
-    public func getPageEventsData() -> PageEvents {
-        return PageEvents(pageEvents: Set(self.pageEvents ?? []))
+    func getPageEventsData() -> PageEvents? {
+        guard let pageEventsArray = self.pageEvents else {
+            return nil
+        }
+        return PageEvents(pageEvents: Set(pageEventsArray))
     }
     
     // MARK: - Page View
-    public func addPageDetails(pageType: String?, url: String?, categories: [String]?, breadcrumbs: [String]?, path: String?) {
-        do {
+    public func addPageDetails(pageType: String?, path: String?, url: String?, categories: [String]?, breadcrumbs: [String]?) throws {
             try validatePageViewData(pageType: pageType, url: url, categories: categories, breadcrumbs: breadcrumbs, path: path)
             self.pageType = pageType
+            self.path = path
             self.url = url
             self.categories = categories
             self.breadcrumbs = breadcrumbs
-            self.path = path
-        } catch {
-            Log.error(error.localizedDescription)
-        }
     }
     
-    public func getPageDetails() -> PageView {
-        return PageView(pageType: pageType ?? "", path: path, url: url, categories: categories, breadcrumbs: breadcrumbs)
+    func getPageDetails() -> PageView? {
+        return PageView(pageType: pageType, path: path, url: url, categories: categories, breadcrumbs: breadcrumbs)
     }
     
     // MARK: - Product Thumbnails
-    public func addProductThumbnailsData(_ products: [String]?) {
-        do {
+    public func addProductThumbnailsData(_ products: [String]?) throws {
             try validateProductThumbnailData(productsData: products)
             self.productsThumbnail = products
-        } catch {
-            Log.error(error.localizedDescription)
-        }
     }
     
-    public func getProductThumbnailsData() -> ProductThumbnailView {
-        return ProductThumbnailView(products: Set(self.productsThumbnail ?? []))
+    func getProductThumbnailsData() -> ProductThumbnailView? {
+        guard let productThumbnailArray = self.productsThumbnail else {
+            return nil
+        }
+        return ProductThumbnailView(products: Set(productThumbnailArray))
     }
     
     // MARK: - Product Details
-    public func addProductDetails(_ productsData: [Product]?) {
-        do {
+    public func addProductDetails(_ productsData: [Product]?) throws {
             try validateProductDetails(productsData)
             self.productsData = productsData
-        } catch {
-            Log.error(error.localizedDescription)
-        }
     }
     
-    public func getProductDetails() -> ProductDetailView {
+    func getProductDetails() -> ProductDetailView? {
         return ProductDetailView(products: productsData)
     }
     
     // MARK: - Purchase
-    public func addPurchaseData(purchaseId: String?, purchaseLineData: [PurchaseLine]?) {
-        do {
+    public func addPurchaseData(purchaseId: String?, purchaseLineData: [PurchaseLine]?) throws {
             try validatePurchaseData(purchaseId: purchaseId, purchaseLines: purchaseLineData)
             self.purchaseId = purchaseId
             self.purchaseData = purchaseLineData
-        } catch {
-            Log.error(error.localizedDescription)
-        }
     }
     
-    public func getPurchaseData() -> Purchase {
-        return Purchase(account: "", domain: "", instance: "", purchaseId: purchaseId ?? "", purchaseLines: purchaseData)
+    func getPurchaseData() -> Purchase? {
+        return Purchase(account: "", domain: "", instance: "", purchaseId: purchaseId, purchaseLines: purchaseData)
     }
     
     // MARK: - Cart
-    public func addAllCartData(_ cartLines: [CartLine]?) {
-        do {
+    public func addAllCartData(_ cartLines: [CartLine]?) throws {
             try validateCartData(cartLines)
             if self.cartLines == nil {
                 self.cartLines = cartLines
             } else if let newLines = cartLines {
                 self.cartLines?.append(contentsOf: newLines)
             }
-        } catch {
-            Log.error(error.localizedDescription)
-        }
     }
     
-    public func getAllCartData() -> [CartLine] {
-        return cartLines ?? []
+    func getAllCartData() -> [CartLine]? {
+        return cartLines
     }
     
     // MARK: - Single Cart
-    public func addSingleCartData(_ cartLine: CartLine?) {
-        do {
+    public func addSingleCartData(_ cartLine: CartLine?) throws {
             try validateSingleCartData(cartLine)
             if let line = cartLine {
                 if cartLines == nil {
@@ -317,34 +288,10 @@ public class ContextObj {
                 cartLines?.append(line)
                 singleCartData = line
             }
-        } catch {
-            Log.error(error.localizedDescription)
-        }
     }
     
-    public func getSingleCartData() -> CartLine? {
+    func getSingleCartData() -> CartLine? {
         return singleCartData
-    }
-    
-    public func removeSingleCartData(_ cartLine: CartLine) {
-        guard let cartLines = cartLines, !cartLines.isEmpty else {
-            Log.warning("Cart is empty, cannot remove item.")
-            return
-        }
-        
-        if let index = cartLines.firstIndex(where: { $0 == cartLine }) {
-            self.cartLines?.remove(at: index)
-        } else {
-            Log.warning("Item not found in cart, cannot remove.")
-        }
-    }
-    
-    public func clearAllCartData() {
-        if let cartLine = self.cartLines, !cartLine.isEmpty {
-            self.cartLines?.removeAll()
-        } else {
-            Log.warning("Cart is already empty, cannot remove data")
-        }
     }
     
 }
@@ -418,7 +365,7 @@ extension ContextObj {
     // Validate PageView
     func validatePageViewData(pageType: String?, url: String?, categories: [String]?, breadcrumbs: [String]?, path: String?) throws {
         guard let pageType = pageType, !pageType.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-            throw ValidationError.missingPageType
+            throw ValidationError.missingPageView
         }
     }
     
@@ -495,4 +442,16 @@ extension ContextObj {
         }
     }
 }
+
+/// getAction error handler
+enum GetActionError: LocalizedError {
+    case invalidResponse
+    var errorDescription: String? {
+        switch self {
+        case .invalidResponse:
+            return "Execution Alert: Invalid response format from server."
+        }
+    }
+}
+
 

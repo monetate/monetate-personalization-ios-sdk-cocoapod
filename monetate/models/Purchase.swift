@@ -25,14 +25,17 @@ public class Purchase: Codable, MEvent {
     /** The purchase lines defining the contents of the purchase. */
     public var purchaseLines: [PurchaseLine]?
     
-    public init(account: String, domain: String, instance: String, purchaseId: String, purchaseLines: [PurchaseLine]?) {
+    public init?(account: String, domain: String, instance: String, purchaseId: String?, purchaseLines: [PurchaseLine]?) {
+        guard let purchaseId = purchaseId, let purchaseLines = purchaseLines else {
+            return nil
+        }
         eventType = "monetate:context:Purchase"
         self.account = account
         self.domain = domain
         self.instance = instance
         self.purchaseId = purchaseId
         self.purchaseLines = purchaseLines
-       // try! checkPurchase()
+        // try! checkPurchase()
     }
     
     func checkPurchase () throws {

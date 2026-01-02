@@ -25,22 +25,31 @@ public class User :Codable {
      */
     public init(monetateId:String?=nil, deviceId: String? = nil, customerId: String? = nil) {
         self.monetateId = monetateId
-        if let val = monetateId{
-            self.monetateId = val
-        }
         self.deviceId = deviceId
-        if let val = deviceId {
-            self.deviceId = val
-        }
         self.customerId = customerId
         
-        try! checkMonetateIDAndDeviceID()
+        do {
+            try checkMonetateIDAndDeviceID()
+        } catch {
+            Log.error(error.localizedDescription)
+        }
     }
     
-    func checkMonetateIDAndDeviceID () throws {
-        if ((monetateId != nil) && monetateId == "") {throw UserIdError.monetateID(description: "Invalid monetateId")}
-        if ((deviceId != nil) && deviceId == "") {throw UserIdError.deviceID(description: "Invalid deviceId")}
-        if (monetateId == nil && deviceId == nil) {throw UserIdError.UserID(description: "monetateId or deviceId, anyone is required")}
+    func checkMonetateIDAndDeviceID() throws {
+        // If monetateId is non-nil but empty
+        if let monetateId = monetateId, monetateId.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            throw UserIdError.monetateID(description: "Invalid monetateId")
+        }
+        
+        // If deviceId is non-nil but empty
+        if let deviceId = deviceId, deviceId.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            throw UserIdError.deviceID(description: "Invalid deviceId")
+        }
+        
+        // If both are nil
+        if monetateId == nil && deviceId == nil {
+            throw UserIdError.userID(description: "Either monetateId or deviceId is required")
+        }
     }
     
     public func setCustomerId (customerId: String) {
@@ -48,8 +57,18 @@ public class User :Codable {
     }
 }
 
-enum UserIdError : Error {
-    case UserID(description: String)
+enum UserIdError : LocalizedError {
+    case userID(description: String)
     case monetateID(description: String)
     case deviceID(description: String)
+    case invalidCustomerId
+    
+    var errorDescription: String? {
+        switch self {
+        case .userID(let desc), .monetateID(let desc), .deviceID(let desc):
+            return desc
+        case .invalidCustomerId:
+            return "Invalid customer id"
+        }
+    }
 }

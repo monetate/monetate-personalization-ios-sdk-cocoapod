@@ -9,10 +9,10 @@
 import Foundation
 
 public struct Account:Codable {
-    private var instance: String
-    private var domain: String
-    private var name: String
-    private var shortname: String
+    private var instance: String?
+    private var domain: String?
+    private var name: String?
+    private var shortname: String?
     
     /**
      Contains standard domain name instance and shortname
@@ -23,30 +23,45 @@ public struct Account:Codable {
         self.domain = domain
         self.name = name
         self.shortname = shortname
-        try! checkAccountInfo()
+        
+        do {
+            try checkAccountInfo()
+        } catch {
+            Log.error(error.localizedDescription)
+        }
     }
     
-    func checkAccountInfo () throws {
-        if (instance == "") {throw AccountError.instance(description: "Invalid Account instance")}
-        if (domain == "") {throw AccountError.domain(description: "Invalid Account domain")}
-        if (name == "") {throw AccountError.name(description: "Invalid Account name")}
-        if (shortname == "") {throw AccountError.shortname(description: "Invalid Account shortname")}
+    func checkAccountInfo() throws {
+        if instance?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true {
+            throw AccountError.instance(description: "Invalid Account instance")
+        }
+        if domain?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true {
+            throw AccountError.domain(description: "Invalid Account domain")
+        }
+        if name?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true {
+            throw AccountError.name(description: "Invalid Account name")
+        }
+        if shortname?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true {
+            throw AccountError.shortname(description: "Invalid Account shortname")
+        }
     }
+
+
     
     func getSDKVersion() -> String {
         return (Bundle(for: Personalization.self).infoDictionary?["CFBundleShortVersionString"] as? String)!
     }
     
     func getChannel () -> String {
-        return "\(name)/\(instance)/\(domain)"
+        return "\(name ?? "")/\(instance ?? "")/\(domain ?? "")"
     }
     
     func getShortName () -> String {
-        return self.shortname
+        return self.shortname ?? ""
     }
     
     func getDomain () -> String {
-        return self.domain
+        return self.domain ?? ""
     }
 }
 

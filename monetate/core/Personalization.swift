@@ -100,9 +100,15 @@ public class Personalization {
     }
     
     public func setCustomerId (customerId: String) {
+        guard !customerId.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            Log.error(UserIdError.invalidCustomerId.localizedDescription)
+            return
+        }
         self.user.setCustomerId(customerId: customerId)
+        _ = self.callMonetateAPI()
     }
-    
+    /// Supported until version 2025.08.01
+     /**
     func report (context:ContextEnum, eventCB:  (() -> Future<MEvent, Error>)?) {
         if let event = eventCB {
             event().on(success: { (data) in
@@ -119,6 +125,7 @@ public class Personalization {
         }
         
     }
+    */
     /**
      Used to add events to the queue, which will be sent with the next flush() call or as part of an automatic timed send.
      
@@ -126,7 +133,7 @@ public class Personalization {
      
      eventData is data associated with event and it is optional parameter.
      */
-    public func report (context:ContextEnum, event: MEvent?) {
+    private func report (context:ContextEnum, event: MEvent?) {
         guard let event = event else {
             self.timer?.resume()
             return
@@ -207,8 +214,9 @@ public class Personalization {
      
      status is the value returned from {meta: {code: ###}}. Anything other than 200 does not include actions in the return.
      */
+    /// Supported until version 2025.08.01
+    /**
     public func getActions (context:ContextEnum, requestId: String, includeReporting: Bool, arrActionTypes:[String], event: MEvent?) -> Future<APIResponse, Error> {
-        
         let promise = Promise <APIResponse, Error>()
         if let event = event {
             processEvents(context, event, requestId, includeReporting, arrActionTypes, promise)
@@ -219,6 +227,7 @@ public class Personalization {
         
         return promise.future
     }
+    */
     
     /**
      Used to add events in queue.
@@ -230,7 +239,7 @@ public class Personalization {
      context and eventData are optional fields.
      
      */
-    public func addEvent(context:ContextEnum, event: MEvent?) {
+    private func addEvent(context:ContextEnum, event: MEvent?) {
         if let event = event {
             Utility.processEvent(context: context, data: event, mqueue: self.eventQueueManager.getQueueSnapshot()).on(success: {[weak self] (queue) in
                 // Update the entire queue snapshot
@@ -251,7 +260,7 @@ public class Personalization {
      status is the value returned from {meta: {code: ###}}. Anything other than 200 does not include actions in the return.
      
      */
-    public func getActionsData(requestId: String, includeReporting: Bool, arrActionTypes:[String]) -> Future<APIResponse, Error>  {
+    private func getActionsData(requestId: String, includeReporting: Bool, arrActionTypes:[String]) -> Future<APIResponse, Error>  {
         let promise = Promise <APIResponse, Error>()
         processDecision(requestId, includeReporting, arrActionTypes, promise)
         return promise.future
@@ -269,7 +278,8 @@ public class Personalization {
             promise.fail(error: er)
         })
     }
-    
+    /// Supported until version 2025.08.01
+    /**
     func getActions (context:ContextEnum, requestId: String, includeReporting: Bool, arrActionTypes:[String], eventCB: (() -> Future<MEvent, Error>)?) -> Future<APIResponse, Error> {
         let promise = Promise <APIResponse, Error>()
         
@@ -287,6 +297,7 @@ public class Personalization {
         }
         return promise.future
     }
+    */
     
     var API_URL = "https://api.monetate.net/api/engine/v1/decide/"
     
@@ -335,15 +346,18 @@ public class Personalization {
     }
 }
 
-// MARK: - New individual Report methodes
+// MARK: - New individual Report and GetAction methodes
 extension Personalization {
     /**
      * Used to report PageEvents data
      * - Parameter contextData: Context object that contains the PageEvents data
      */
     public func reportPageEvents(contextData: ContextObj) {
-        let pageEventsData = contextData.getPageEventsData()
-        report(context: .PageEvents, event: pageEventsData)
+        if let pageEventsData = contextData.getPageEventsData() {
+            report(context: .PageEvents, event: pageEventsData)
+        } else {
+            Log.error(ValidationError.missingPageEvent(index: -1).localizedDescription)
+        }
     }
     
     /**
@@ -351,9 +365,12 @@ extension Personalization {
      * - Parameter contextData: Context object  that contains the Cart data
      */
     public func reportCartData(contextData: ContextObj) {
-        let cartLines = contextData.getAllCartData()
-        let cart = Cart(cartLines: cartLines)
-        report(context: .Cart, event: cart)
+        if let cartLines = contextData.getAllCartData() {
+            let cart = Cart(cartLines: cartLines)
+            report(context: .Cart, event: cart)
+        } else {
+            Log.error(ValidationError.missingCartData(index: -1).localizedDescription)
+        }
     }
     
     /**
@@ -365,6 +382,8 @@ extension Personalization {
             let cartLines = [cartLine]
             let addToCart = AddToCart(cartLines: cartLines)
             report(context: .AddToCart, event: addToCart)
+        } else {
+            Log.error(ValidationError.missingSingleCartData.localizedDescription)
         }
     }
     
@@ -373,8 +392,11 @@ extension Personalization {
      - Parameter contextData: Context object that contains the Purchase data
      */
     public func reportPurchaseData(contextData: ContextObj) {
-        let purchaseData = contextData.getPurchaseData()
-        report(context: .Purchase, event: purchaseData)
+        if let purchaseData = contextData.getPurchaseData() {
+            report(context: .Purchase, event: purchaseData)
+        } else {
+            Log.error(ValidationError.missingPurchaseData(index: -1).localizedDescription)
+        }
     }
 
     /**
@@ -382,8 +404,11 @@ extension Personalization {
      - Parameter contextData: Context object that contains the PageDetails data
      */
     public func reportPageDetails(contextData: ContextObj) {
-        let pageView = contextData.getPageDetails()
-        report(context: .PageView, event: pageView)
+        if let pageView = contextData.getPageDetails() {
+            report(context: .PageView, event: pageView)
+        } else {
+            Log.error(ValidationError.missingPageView.localizedDescription)
+        }
     }
 
     /**
@@ -391,8 +416,11 @@ extension Personalization {
      - Parameter contextData: Context object that contains the ProductDetails data
      */
     public func reportProductDetails(contextData: ContextObj) {
-        let productDetailView = contextData.getProductDetails()
-        report(context: .ProductDetailView, event: productDetailView)
+        if let productDetailView = contextData.getProductDetails() {
+            report(context: .ProductDetailView, event: productDetailView)
+        } else {
+            Log.error(ValidationError.missingProductDetails(index: -1).localizedDescription)
+        }
     }
     
     /**
@@ -400,8 +428,11 @@ extension Personalization {
      - Parameter contextData: Context object that contains the ProductThumbnailData
      */
     public func reportProductThumbnailData(contextData: ContextObj) {
-        let productThumbnailView = contextData.getProductThumbnailsData()
-        report(context: .ProductThumbnailView, event: productThumbnailView)
+        if let productThumbnailView = contextData.getProductThumbnailsData() {
+            report(context: .ProductThumbnailView, event: productThumbnailView)
+        } else {
+            Log.error(ValidationError.missingProductThumbnail(index: -1).localizedDescription)
+        }
     }
 
     /**
@@ -409,8 +440,11 @@ extension Personalization {
      - Parameter ids: An array of id Strings to be processed
      */
     public func reportImpressionsData(ids: [String]) {
-        let impressions = Impressions(impressionIds: ids)
-        report(context: .Impressions, event: impressions)
+        if let impressions = Impressions(impressionIds: ids) {
+            report(context: .Impressions, event: impressions)
+        } else {
+            Log.error(ValidationError.missingImpressionData.localizedDescription)
+        }
     }
 
     /**
@@ -418,8 +452,11 @@ extension Personalization {
      - Parameter tokens: An array of token Strings to be processed
      */
     public func reportRecImpressionsData(tokens: [String]) {
-        let recImpressions = RecImpressions(recImpressions: tokens)
-        report(context: .RecImpressions, event: recImpressions)
+        if let recImpressions = RecImpressions(recImpressions: tokens) {
+            report(context: .RecImpressions, event: recImpressions)
+        } else {
+            Log.error(ValidationError.missingRecImpressiondata.localizedDescription)
+        }
     }
 
     /**
@@ -427,10 +464,142 @@ extension Personalization {
      - Parameter tokens: An array of token Strings to be processed
      */
     public func reportRecClicksData(tokens: [String]) {
-        let recClicks = RecClicks(recClicks: tokens)
-        report(context: .RecClicks, event: recClicks)
+        if let recClicks = RecClicks(recClicks: tokens) {
+            report(context: .RecClicks, event: recClicks)
+        } else {
+            Log.error(ValidationError.missingRecClickData.localizedDescription)
+        }
     }
     
+    /**
+     Fetches actions based on the specified action types and reporting preference.
+     
+     This function validates the provided action types, checks that necessary context
+     data is available, and asynchronously retrieves the relevant actions. It can
+     optionally include reporting-related actions.
+     
+     - Parameters:
+      - context: The context object containing necessary environment or configuration.
+      - arrActionTypes: An array of action type strings to fetch. Must not be empty.
+      - includeReporting: A Boolean indicating whether to include reporting-related actions.
+     */
+    
+    public func getActions (context:ContextObj,
+                            arrActionTypes:[String],
+                            includeReporting: Bool
+    ) -> Future<[[String: Any]], Error> {
+        let promise = Promise <[[String: Any]], Error>()
+        addEventData(context: context)
+        let requestId = generateRequestId()
+        getActionsData(requestId: requestId, includeReporting: includeReporting, arrActionTypes: arrActionTypes)
+            .observe(on: self.sdkQueue)
+            .on { [weak self] responseData in
+                guard let self = self.guardSelf(promise: promise) else { return }
+                do {
+                    let actionResponse = try self.filterActionsData(response: responseData)
+                    promise.succeed(value: actionResponse)
+                } catch {
+                    Log.error(error.localizedDescription)
+                    promise.fail(error: error)
+                }
+            }
+        return promise.future
+    }
+    
+    /**
+     Used to fetch available context data
+     - Parameter context: Context object with relevent data
+     */
+    private func addEventData(context: ContextObj) {
+        
+        if let coordinates = context.getCoordinatesData() {
+            addEvent(context: .Coordinates, event: coordinates)
+        }
+        
+        if let ipAddress = context.getIpAddress() {
+            addEvent(context: .IpAddress, event: ipAddress)
+        }
+        
+        if let cartLines = context.getAllCartData() {
+            let cart = Cart(cartLines: cartLines)
+            addEvent(context: .Cart, event: cart)
+        }
+        
+        if let userAgent = context.getUserAgentData() {
+            addEvent(context: .UserAgent, event: userAgent)
+        }
+        
+        if let screenSize = context.getScreenSizeData() {
+            addEvent(context: .ScreenSize, event: screenSize)
+        }
+        
+        if let customVariables = context.getCustomVariablesData() {
+            addEvent(context: .CustomVariables, event: customVariables)
+        }
+        
+        if let metaData = context.getMetaData() {
+            addEvent(context: .Metadata, event: metaData)
+        }
+        
+        if let pageEvents = context.getPageEventsData() {
+            addEvent(context: .PageEvents, event: pageEvents)
+        }
+        
+        if let pageView = context.getPageDetails() {
+            addEvent(context: .PageView, event: pageView)
+        }
+        
+        if let productThumbnailView = context.getProductThumbnailsData() {
+            addEvent(context: .ProductThumbnailView, event: productThumbnailView)
+        }
+        
+        if let productDetailView = context.getProductDetails() {
+            addEvent(context: .ProductDetailView, event: productDetailView)
+        }
+        
+        if let purchase = context.getPurchaseData() {
+            addEvent(context: .Purchase, event: purchase)
+        }
+        
+        if let cartLine = context.getSingleCartData() {
+            let addToCart = AddToCart(cartLines: [cartLine])
+            addEvent(context: .AddToCart, event: addToCart)
+        }
+    }
+    
+    /**
+     Used to fetch Actions data from API response
+     - Parameter response: API response obtained from engine API
+     */
+    private func filterActionsData(response: APIResponse) throws -> [[String: Any]] {
+        
+        // Convert response.data → Dictionary
+        let root: [String: Any]
+        
+        if let dict = response.data as? [String: Any] {
+            root = dict
+        } else if let encodable = response.data as? Encodable {
+            root = try encodable.toDictionary()
+        } else if let data = response.data as? Data,
+                  let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] {
+            root = json
+        } else {
+            throw GetActionError.invalidResponse
+        }
+        
+        // Traverse responses array until actions found
+        if let data = root["data"] as? [String: Any],
+           let responses = data["responses"] as? [[String: Any]] {
+            for responseItem in responses {
+                if let actions = responseItem["actions"] as? [[String: Any]], !actions.isEmpty {
+                    return actions
+                }
+            }
+        }
+
+        // No actions found in any response
+        return []
+    }
 }
 
 // MARK: - Search Feature Module
@@ -449,7 +618,7 @@ extension Personalization {
      
      - Returns: A `Future` containing an `APIResponse` with search results or an error.
      */
-    public func fetchSearchResults(
+    private func fetchSearchResults(
         searchTerm: String,
         limit: Int = 10,
         offset: Int = 0
@@ -481,7 +650,7 @@ extension Personalization {
 
          - Returns: A `Future` containing an `APIResponse` with search results or an `Error` if the operation fails.
          */
-    public func fetchAutoSuggestionResults(
+    private func fetchAutoSuggestionResults(
         searchTerm: String,
         limit: Int = 10,
         offset: Int = 0,
@@ -514,7 +683,7 @@ extension Personalization {
 
          - Returns: A `Future` containing an `APIResponse` with search results or an `Error` if the operation fails.
          */
-    public func fetchCategoryNavigationResults(
+    private func fetchCategoryNavigationResults(
         categoryPath: String,
         limit: Int = 10,
         offset: Int = 0
@@ -546,7 +715,7 @@ extension Personalization {
 
          - Returns: A `Future` containing an `APIResponse` with search results or an `Error` if the operation fails.
          */
-     public func fetchContentSearchResults(
+     private func fetchContentSearchResults(
         searchTerm: String,
         recordTypes: [String],
         limit: Int = 10,
@@ -771,7 +940,7 @@ extension Personalization {
 
      - Returns: A `Future` that completes with an `APIResponse` on success, or an `Error` on failure.
      */
-    public func reportSearchClickToken(
+    private func reportSearchClickToken(
         searchToken: String
     ) -> Future<APIResponse, Error> {
         let promise = Promise<APIResponse, Error>()
@@ -812,7 +981,7 @@ extension Personalization {
      - Returns: A `Future` containing an `APIResponse` on success or an `Error` on failure.
      */
     
-    public func fetchURLRedirects() -> Future<APIResponse, Error>{
+    private func fetchURLRedirects() -> Future<APIResponse, Error>{
         let promise = Promise<APIResponse, Error>()
         
         sdkQueue.async { [weak self] in
@@ -862,7 +1031,7 @@ extension Personalization {
      
      - Returns: A `Future` containing an `APIResponse` on success or an `Error` on failure.
      */
-    public func fetchSearchFilters(
+    private func fetchSearchFilters(
         searchTerm: String,
         limit: Int,
         filterFacets: Any

@@ -25,7 +25,10 @@ public struct IPAddress: Context,Codable {
     /** The IP address */
     public var ipAddress: String
     
-    public init(ipAddress: String) {
+    public init?(ipAddress: String?) {
+        guard let ipAddress = ipAddress else {
+            return nil
+        }
         eventType = "monetate:context:IpAddress"
         self.ipAddress = ipAddress
        // try! checkIPAddress()
