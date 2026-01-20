@@ -191,7 +191,6 @@
 			children = (
 				1F157C4A26B02FCC000D952B /* core */,
 				1F157C5126B02FCC000D952B /* Log.swift */,
-				1F157C5226B02FCC000D952B /* config */,
 				1F157C5326B02FCC000D952B /* models */,
 				1F157C6C26B02FCC000D952B /* actions */,
 				1F157C6E26B02FCC000D952B /* services */,
@@ -210,13 +209,6 @@
 				1F157C5026B02FCC000D952B /* Account.swift */,
 			);
 			path = core;
-			sourceTree = "<group>";
-		};
-		1F157C5226B02FCC000D952B /* config */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = config;
 			sourceTree = "<group>";
 		};
 		1F157C5326B02FCC000D952B /* models */ = {

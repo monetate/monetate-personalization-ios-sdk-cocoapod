@@ -14,35 +14,18 @@ public class Purchase: Codable, MEvent {
     
     /** A value which identifies the type of event. */
     public let eventType: String
-    /** The account id */
-    public var account: String
-    /** The account domain (i.e. fifthlevelfashion.com) */
-    public var domain: String
-    /** The type of instance (i.e. p for production) */
-    public var instance: String
     /** Unique identifier for the purchase. */
     public var purchaseId: String
     /** The purchase lines defining the contents of the purchase. */
     public var purchaseLines: [PurchaseLine]?
     
-    public init?(account: String, domain: String, instance: String, purchaseId: String?, purchaseLines: [PurchaseLine]?) {
+    public init?(purchaseId: String?, purchaseLines: [PurchaseLine]?) {
         guard let purchaseId = purchaseId, let purchaseLines = purchaseLines else {
             return nil
         }
         eventType = "monetate:context:Purchase"
-        self.account = account
-        self.domain = domain
-        self.instance = instance
         self.purchaseId = purchaseId
         self.purchaseLines = purchaseLines
-        // try! checkPurchase()
-    }
-    
-    func checkPurchase () throws {
-        if (account == "") {throw PurchaseError.account(description: "Invalid account")}
-        if (domain == "") {throw PurchaseError.domain(description: "Invalid domain")}
-        if (instance == "") {throw PurchaseError.instance(description: "Invalid instance")}
-        if (purchaseId == "") {throw PurchaseError.purchaseId(description: "Invalid purchaseId")}
     }
     
     static func merge (first: [PurchaseLine], second: [PurchaseLine]) -> [PurchaseLine] {

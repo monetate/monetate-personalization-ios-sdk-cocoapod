@@ -261,7 +261,7 @@ public class ContextObj {
     }
     
     func getPurchaseData() -> Purchase? {
-        return Purchase(account: "", domain: "", instance: "", purchaseId: purchaseId, purchaseLines: purchaseData)
+        return Purchase(purchaseId: purchaseId, purchaseLines: purchaseData)
     }
     
     // MARK: - Cart
