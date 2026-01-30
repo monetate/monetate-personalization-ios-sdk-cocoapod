@@ -91,7 +91,7 @@ Join the 1,000+ brands growing their revenue with Monetate"
   #  Not including the public_header_files will make all headers public.
   #
 
-  s.source_files  = "monetate/**/*"
+  s.source_files  = "Sources/monetate/**/*"
 
   # s.public_header_files = "Classes/**/*.h"
 
