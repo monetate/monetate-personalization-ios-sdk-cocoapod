@@ -299,20 +299,16 @@ public class Personalization {
     }
     */
     
-    var API_URL = "https://api.monetate.net/api/engine/v1/decide/"
+   // var API_URL = "https://api.monetate.net/api/engine/v1/decide/"
+   // SiteSearch_URL = https://engine.monetate.net/api/search/v1/site-search/a-3e41bf76/p/monetate.mybigcommerce.com/search
     
     func callMonetateAPI (data: Data? = nil, requestId: String?=nil) -> Future<APIResponse,Error> {
         let promise = Promise<APIResponse,Error>()
         
-        var body:[String:Any] = [
-            "channel":account.getChannel(),
-            "sdkVersion": account.getSDKVersion(),
-            "events": Utility.createEventBody(queue: eventQueueManager.getQueueSnapshot())]
-        
-        if let val = self.user.deviceId { body["deviceId"] = val } else if let val = self.user.monetateId { body["monetateId"] = val }
-        if let val = self.user.customerId { body["customerId"] = val }
-        let engineURL = self.API_URL + account.getShortName()
+        let body:[String:Any] = buildDecisionRequestBody()
+        let engineURL = getDecisionURL(account: account.getShortName()) ?? "Invalid URL"
         let jsonString = body.toString ?? "JSON String conversion failed. Fallback: \(String(describing: body))"
+        
         Log.debug("Monetate Engine API URL - \(engineURL)")
         Log.debug("Monetate Engine API body created - \(jsonString)")
         
@@ -322,25 +318,10 @@ public class Personalization {
             Log.debug("callMonetateAPI - Success - \(data.toString)")
             
             promise.succeed(value: APIResponse(success: true, res: res, status: status, data: data, requestId:requestId))
-        }) { (er, d, status, res) in
+        }) {[weak self] (er, data, status, res) in
             Log.debug("callMonetateAPI - Error")
-            
-            if let err = er {
-                promise.fail(error: err)
-                self.errorQueue.append(MError(description: err.localizedDescription, domain: .ServerError, info: nil))
-            } else {
-                let er = NSError.init(domain: "API Error", code: status ?? -1, userInfo: nil)
-                if let val = d {
-                    let merror = MError(description: er.localizedDescription, domain: .APIError, info: val.toJSON() ?? [:])
-                    Log.error("callMonetateAPI Error Message- \(val.toString)")
-                    
-                    self.errorQueue.append(merror)
-                    promise.fail(error: merror)
-                } else {
-                    self.errorQueue.append(MError(description: er.localizedDescription, domain: .APIError, info: nil))
-                    promise.fail(error: er)
-                }
-            }
+            guard let self = self.guardSelf(promise: promise) else { return }
+            self.handleMonetateAPIError(er: er, d: data, status: status, promise: promise)
         }
         return promise.future
     }
@@ -491,18 +472,23 @@ extension Personalization {
         let promise = Promise <[[String: Any]], Error>()
         addEventData(context: context)
         let requestId = generateRequestId()
-        getActionsData(requestId: requestId, includeReporting: includeReporting, arrActionTypes: arrActionTypes)
-            .observe(on: self.sdkQueue)
-            .on { [weak self] responseData in
-                guard let self = self.guardSelf(promise: promise) else { return }
-                do {
-                    let actionResponse = try self.filterActionsData(response: responseData)
-                    promise.succeed(value: actionResponse)
-                } catch {
-                    Log.error(error.localizedDescription)
-                    promise.fail(error: error)
-                }
-            }
+        sdkQueue.async {[weak self] in
+            guard let self = self.guardSelf(promise: promise) else { return }
+            self.getActionsData(requestId: requestId, includeReporting: includeReporting, arrActionTypes: arrActionTypes)
+                .observe(on: self.sdkQueue)
+                .on( success:{[weak self] responseData in
+                    guard let self = self.guardSelf(promise: promise) else { return }
+                    do {
+                        let actionResponse = try self.filterActionsData(response: responseData)
+                        promise.succeed(value: actionResponse)
+                    } catch {
+                        Log.error(error.localizedDescription)
+                        promise.fail(error: error)
+                    }
+                }, failure: { (err) in
+                    promise.fail(error: err)
+                } )
+        }
         return promise.future
     }
     
@@ -599,6 +585,49 @@ extension Personalization {
 
         // No actions found in any response
         return []
+    }
+}
+
+//MARK: - Monetate API Handlers
+extension Personalization {
+    private func buildDecisionRequestBody() -> [String: Any] {
+        var body: [String: Any] = [
+            "channel": account.getChannel(),
+            "sdkVersion": account.getSDKVersion(),
+            "events": Utility.createEventBody(queue: eventQueueManager.getQueueSnapshot())
+        ]
+
+        if let val = user.deviceId {
+            body["deviceId"] = val
+        } else if let val = user.monetateId {
+            body["monetateId"] = val
+        }
+
+        if let val = user.customerId {
+            body["customerId"] = val
+        }
+
+        return body
+    }
+    
+    private func handleMonetateAPIError(er: Error?, d: Data?, status: Int?, promise: Promise<APIResponse,Error>) {
+    
+        if let err = er {
+            self.errorQueue.append(MError(description: err.localizedDescription, domain: .ServerError, info: nil))
+            promise.fail(error: err)
+        } else {
+            let er = NSError.init(domain: "API Error", code: status ?? -1, userInfo: nil)
+            if let val = d {
+                let merror = MError(description: er.localizedDescription, domain: .APIError, info: val.toJSON() ?? [:])
+                Log.error("callMonetateAPI Error Message- \(val.toString)")
+                
+                self.errorQueue.append(merror)
+                promise.fail(error: merror)
+            } else {
+                self.errorQueue.append(MError(description: er.localizedDescription, domain: .APIError, info: nil))
+                promise.fail(error: er)
+            }
+        }
     }
 }
 
@@ -908,7 +937,7 @@ extension Personalization {
         do {
             let reqId = searchConfig.requestId?.rawValue ?? UUID().uuidString
             let prereq = self.prerequisiteManager.get()
-            let body = requestBodyCreator.createRequestBody(searchConfig: searchConfig, searchToken: prereq?.searchToken)
+            let body = requestBodyCreator.createSiteSearchRequestBody(searchConfig: searchConfig, searchToken: prereq?.searchToken)
             let bodyDict = try body.toDictionary()
             
             self.callMonetateSiteSearchAPI(
