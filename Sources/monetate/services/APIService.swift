@@ -11,7 +11,8 @@ import Foundation
 /// Holds configuration constants for the Monetate API.
 struct APIConfig {
     static let scheme = "https"
-    static let domain = "engine.monetate.net"
+    static let engDomain = "engine.monetate.net"
+    static let apiDomain = "api.monetate.net"
     
     struct Paths {
         static let decide = "/api/engine/v1/decide/"
@@ -44,11 +45,19 @@ struct APIConfig {
     }
 }
 
+func getDecisionURL(account: String) -> String? {
+    var components = URLComponents()
+    components.scheme = APIConfig.scheme
+    components.host = APIConfig.apiDomain
+    components.path = APIConfig.Paths.decide + account
+    
+    return components.url?.absoluteString
+}
 
 func getSiteSearchURL(endpoint: APIConfig.Endpoint, preRequisite: SearchPreRequisite?) -> String? {
     var components = URLComponents()
     components.scheme = APIConfig.scheme
-    components.host = APIConfig.domain
+    components.host = APIConfig.engDomain
     components.path = endpoint.path(for: preRequisite?.channelData ?? "No channel")
     
     if endpoint == .urlRedirect, let actionId = preRequisite?.actionId {
