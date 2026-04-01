@@ -47,6 +47,15 @@ public class ScheduleTimer {
         Log.debug("Timer suspended -  \(Date().toString("E dd MM YY HH:mm:ss"))", shouldLogContext: false)
         
     }
+    
+    deinit {
+        timer.setEventHandler {}
+    
+        if state == .suspended {
+            timer.resume()
+        }
+        timer.cancel()
+    }
 }
 
 

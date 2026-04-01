@@ -13,7 +13,7 @@ public class Personalization {
     //class members
     public var account: Account
     private var user: User
-    public var timer: ScheduleTimer?
+    private var timer: ScheduleTimer?
     
     private let eventQueueManager = EventQueueManager()
     private var errorQueue: [MError] = []
@@ -26,8 +26,8 @@ public class Personalization {
     public init (account: Account, user: User) {
         self.account = account
         self.user = user
-        self.timer = ScheduleTimer(timeInterval: 0.7, callback: { [self] in
-            _ = self.callMonetateAPI()
+        self.timer = ScheduleTimer(timeInterval: 0.7, callback: { [weak self]  in
+            _ = self?.callMonetateAPI()
         })
     }
     
@@ -70,10 +70,10 @@ public class Personalization {
             Log.debug("callMonetateAPIOnContextSwitched Success - \(self?.eventQueueManager.getQueueSnapshot().keys.count ?? 0)")
             self?.eventQueueManager.setEvent(event, for: context)
             self?.timer?.resume()
-        }, failure: { (er) in
+        }, failure: { [weak self] er in
             Log.debug("callMonetateAPIOnContextSwitched Failure")
             
-            self.timer?.resume()
+            self?.timer?.resume()
         })
     }
     
@@ -158,8 +158,8 @@ public class Personalization {
     
     fileprivate func processEvents(_ context: ContextEnum, _ event: MEvent, _ requestId: String, _ includeReporting: Bool, _ arrActionTypes:[String], _ promise: Promise<APIResponse, Error>) {
         if isContextSwitched(ctx: context, event: event) {
-            self.callMonetateAPIOnContextSwitchedForGetActions().on(success: { (res1) in
-                Utility.processEvent(context: context, data: event, mqueue: self.eventQueueManager.getQueueSnapshot()).on(success: {[weak self] (mqueue) in
+            self.callMonetateAPIOnContextSwitchedForGetActions().on(success: { [weak self](res1) in
+                Utility.processEvent(context: context, data: event, mqueue: self?.eventQueueManager.getQueueSnapshot() ?? [:]).on(success: {[weak self] (mqueue) in
                     // Update the entire queue snapshot
                         self?.eventQueueManager.updateQueue(mqueue)
                     //adding decision request event
@@ -840,8 +840,8 @@ extension Personalization {
                         promise.fail(error: err)
                     }
                 },
-                failure: { error in
-                    self.prerequisiteManager.set(nil)
+                failure: {[weak self] error in
+                    self?.prerequisiteManager.set(nil)
                     promise.fail(error: error)
                 }
             )
@@ -1124,24 +1124,24 @@ extension Personalization {
                 Log.debug("\(requestId) API success response - \(String(describing: apiResponse.data))")
                 promise.succeed(value: apiResponse)
             },
-            failure: { (er, d, status, res) in
+            failure: { [weak self](er, d, status, res) in
                 Log.debug("\(requestId) API - Error")
                 
                 if let err = er {
                     let mError = MError(description: err.localizedDescription, domain: .ServerError, info: nil)
-                    self.errorQueue.append(mError)
+                    self?.errorQueue.append(mError)
                     Log.error("\(requestId) API Error Message - \(err.localizedDescription)")
                     promise.fail(error: err)
                 } else {
                     let er = NSError.init(domain: "API Error", code: status ?? -1, userInfo: nil)
                     if let val = d {
                         let mError = MError(description: er.localizedDescription, domain: .APIError, info: val.toJSON() ?? [:])
-                        self.errorQueue.append(mError)
+                        self?.errorQueue.append(mError)
                         Log.error("\(requestId) API Error Message- \(val.toString)")
                         promise.fail(error: mError)
                     } else {
                         let mError = MError(description: er.localizedDescription, domain: .APIError, info: nil)
-                        self.errorQueue.append(mError)
+                        self?.errorQueue.append(mError)
                         Log.error("Search API Error Message - \(er.localizedDescription)")
                         promise.fail(error: mError)
                     }
