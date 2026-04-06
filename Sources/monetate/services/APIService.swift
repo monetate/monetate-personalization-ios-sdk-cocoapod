@@ -8,11 +8,37 @@
 
 import Foundation
 
+/// API Domain handler
+public enum MonetateAPIDomain {
+    case engine
+    case custom(String)
+
+    var value: String {
+        switch self {
+        case .engine:
+            return "engine.monetate.net"
+        case .custom(let domain):
+            return domain
+        }
+    }
+}
+
+enum TypeOfRequest: String, Codable {
+    case search = "SEARCH"
+    case autoSuggestion = "AUTO_SUGGESTIONS"
+    case categoryNavigation = "CATNAV"
+}
+
+enum Method:String {
+    case GET
+    case POST
+    case PUT
+    case DELETE
+}
+
 /// Holds configuration constants for the Monetate API.
 struct APIConfig {
     static let scheme = "https"
-    static let engDomain = "engine.monetate.net"
-    static let apiDomain = "api.monetate.net"
     
     struct Paths {
         static let decide = "/api/engine/v1/decide/"
@@ -45,44 +71,38 @@ struct APIConfig {
     }
 }
 
-func getDecisionURL(account: String) -> String? {
-    var components = URLComponents()
-    components.scheme = APIConfig.scheme
-    components.host = APIConfig.apiDomain
-    components.path = APIConfig.Paths.decide + account
-    
-    return components.url?.absoluteString
-}
 
-func getSiteSearchURL(endpoint: APIConfig.Endpoint, preRequisite: SearchPreRequisite?) -> String? {
-    var components = URLComponents()
-    components.scheme = APIConfig.scheme
-    components.host = APIConfig.engDomain
-    components.path = endpoint.path(for: preRequisite?.channelData ?? "No channel")
+
+class APIService {
+    private let apiDomain: MonetateAPIDomain
     
-    if endpoint == .urlRedirect, let actionId = preRequisite?.actionId {
-        components.queryItems = [URLQueryItem(name: "actionId", value: "\(actionId)")]
+    init(apiDomain: MonetateAPIDomain) {
+        self.apiDomain = apiDomain
     }
     
-    return components.url?.absoluteString
-}
+    func getDecisionURL(account: String) -> String? {
+        var components = URLComponents()
+        components.scheme = APIConfig.scheme
+        components.host = apiDomain.value
+        components.path = APIConfig.Paths.decide + account
+        
+        return components.url?.absoluteString
+    }
 
-
-enum TypeOfRequest: String, Codable {
-    case search = "SEARCH"
-    case autoSuggestion = "AUTO_SUGGESTIONS"
-    case categoryNavigation = "CATNAV"
-}
-
-enum Method:String {
-    case GET
-    case POST
-    case PUT
-    case DELETE
-}
-
-class Service {
-    static func getDecision(
+    func getSiteSearchURL(endpoint: APIConfig.Endpoint, preRequisite: SearchPreRequisite?) -> String? {
+        var components = URLComponents()
+        components.scheme = APIConfig.scheme
+        components.host = apiDomain.value
+        components.path = endpoint.path(for: preRequisite?.channelData ?? "No channel")
+        
+        if endpoint == .urlRedirect, let actionId = preRequisite?.actionId {
+            components.queryItems = [URLQueryItem(name: "actionId", value: "\(actionId)")]
+        }
+        
+        return components.url?.absoluteString
+    }
+    
+    func getDecision(
         url: String,
         method: Method = .POST,
         body: [String: Any]? = nil,
