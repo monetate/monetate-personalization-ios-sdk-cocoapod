@@ -14,6 +14,7 @@ public class Personalization {
     public var account: Account
     private var user: User
     private var timer: ScheduleTimer?
+    private let service: APIService
     
     private let eventQueueManager = EventQueueManager()
     private var errorQueue: [MError] = []
@@ -26,6 +27,7 @@ public class Personalization {
     public init (account: Account, user: User) {
         self.account = account
         self.user = user
+        self.service = APIService(apiDomain: .engine)
         self.timer = ScheduleTimer(timeInterval: 0.7, callback: { [weak self]  in
             _ = self?.callMonetateAPI()
         })
@@ -299,21 +301,21 @@ public class Personalization {
     }
     */
     
-   // var API_URL = "https://api.monetate.net/api/engine/v1/decide/"
+   // var API_URL = "https://engine.monetate.net/api/engine/v1/decide/"
    // SiteSearch_URL = https://engine.monetate.net/api/search/v1/site-search/a-3e41bf76/p/monetate.mybigcommerce.com/search
     
     func callMonetateAPI (data: Data? = nil, requestId: String?=nil) -> Future<APIResponse,Error> {
         let promise = Promise<APIResponse,Error>()
         
         let body:[String:Any] = buildDecisionRequestBody()
-        let engineURL = getDecisionURL(account: account.getShortName()) ?? "Invalid URL"
+        let engineURL = service.getDecisionURL(account: account.getShortName()) ?? "Invalid URL"
         let jsonString = body.toString ?? "JSON String conversion failed. Fallback: \(String(describing: body))"
         
         Log.debug("Monetate Engine API URL - \(engineURL)")
         Log.debug("Monetate Engine API body created - \(jsonString)")
         
         self.timer?.suspend()
-        Service.getDecision(url: engineURL, body: body, headers: nil, success: {[weak self] (data, status, res) in
+        service.getDecision(url: engineURL, body: body, headers: nil, success: {[weak self] (data, status, res) in
             self?.eventQueueManager.updateQueue([:])
             Log.debug("callMonetateAPI - Success - \(data.toString)")
             
@@ -1102,7 +1104,7 @@ extension Personalization {
         preRequisite: SearchPreRequisite?
     ) -> Future<APIResponse, Error> {
         let promise = Promise<APIResponse, Error>()
-        guard let url = getSiteSearchURL(endpoint: endpoint, preRequisite: preRequisite),
+        guard let url = service.getSiteSearchURL(endpoint: endpoint, preRequisite: preRequisite),
               !url.isEmpty else {
             let error = NSError(domain: "API Error", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])
             let mError = MError(description: error.localizedDescription, domain: .APIError, info: nil)
@@ -1115,7 +1117,7 @@ extension Personalization {
         let bodyString = body?.toJSONString ?? "<nil>"
         Log.debug("\(requestId) request body - \(bodyString)")
 
-        Service.getDecision(
+        service.getDecision(
             url: url,
             method: method,
             body: body,
