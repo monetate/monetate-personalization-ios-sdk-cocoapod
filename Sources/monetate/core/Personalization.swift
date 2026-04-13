@@ -69,7 +69,8 @@ public class Personalization {
         
         self.callMonetateAPI().on(success: {[weak self] (res) in
             
-            Log.debug("callMonetateAPIOnContextSwitched Success - \(self?.eventQueueManager.getQueueSnapshot().keys.count ?? 0)")
+            let count = self?.eventQueueManager.getQueueSnapshot().keys.count ?? 0
+            Log.debug("callMonetateAPIOnContextSwitched success - queue count: \(count)")
             self?.eventQueueManager.setEvent(event, for: context)
             self?.timer?.resume()
         }, failure: { [weak self] er in
@@ -84,11 +85,13 @@ public class Personalization {
         
         Log.debug("\n>> context switched\n")
         self.callMonetateAPI().on(success: {[weak self] (res) in
-            Log.debug("callMonetateAPIOnContextSwitchedForGetActions Success \(self?.eventQueueManager.getQueueSnapshot().keys.count ?? 0)")
+            let count = self?.eventQueueManager.getQueueSnapshot().keys.count ?? 0
+            Log.debug("callMonetateAPIOnContextSwitchedForGetActions success - queue count: \(count)")
             
             promise.succeed(value: res)
         }, failure: {[weak self] (er) in
-            Log.debug("callMonetateAPIOnContextSwitchedForGetActions Failure \(self?.eventQueueManager.getQueueSnapshot().keys.count ?? 0)")
+            let count = self?.eventQueueManager.getQueueSnapshot().keys.count ?? 0
+            Log.debug("callMonetateAPIOnContextSwitchedForGetActions failure - queue count: \(count)")
             
             promise.fail(error: er)
         })
@@ -1155,7 +1158,7 @@ extension Personalization {
 }
 
 extension Date {
-    func toMillis() -> Int64! {
+    func toMillis() -> Int64 {
         return Int64(self.timeIntervalSince1970 * 1000)
     }
     init(millis: Int64) {
