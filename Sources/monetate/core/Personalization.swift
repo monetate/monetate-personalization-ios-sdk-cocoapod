@@ -27,7 +27,7 @@ public class Personalization {
     public init (account: Account, user: User) {
         self.account = account
         self.user = user
-        self.service = APIService(apiDomain: .engine)
+        self.service = APIService(engineHost: account.getEngineHost())
         self.timer = ScheduleTimer(timeInterval: 0.7, callback: { [weak self]  in
             _ = self?.callMonetateAPI()
         })

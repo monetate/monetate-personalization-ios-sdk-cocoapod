@@ -9,7 +9,7 @@
 import Foundation
 
 /// API Domain handler
-public enum MonetateAPIDomain {
+enum MonetateHostDomain: Codable {
     case engine
     case custom(String)
 
@@ -74,16 +74,16 @@ struct APIConfig {
 
 
 class APIService {
-    private let apiDomain: MonetateAPIDomain
+    private let engineHost: MonetateHostDomain
     
-    init(apiDomain: MonetateAPIDomain) {
-        self.apiDomain = apiDomain
+    init(engineHost: MonetateHostDomain) {
+        self.engineHost = engineHost
     }
     
     func getDecisionURL(account: String) -> String? {
         var components = URLComponents()
         components.scheme = APIConfig.scheme
-        components.host = apiDomain.value
+        components.host = engineHost.value
         components.path = APIConfig.Paths.decide + account
         
         return components.url?.absoluteString
@@ -92,7 +92,7 @@ class APIService {
     func getSiteSearchURL(endpoint: APIConfig.Endpoint, preRequisite: SearchPreRequisite?) -> String? {
         var components = URLComponents()
         components.scheme = APIConfig.scheme
-        components.host = apiDomain.value
+        components.host = engineHost.value
         components.path = endpoint.path(for: preRequisite?.channelData ?? "No channel")
         
         if endpoint == .urlRedirect, let actionId = preRequisite?.actionId {
