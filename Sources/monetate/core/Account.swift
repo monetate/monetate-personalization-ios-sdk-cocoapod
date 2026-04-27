@@ -24,9 +24,9 @@ public struct Account:Codable {
         self.domain = domain
         self.name = name
         self.shortname = shortname
-        if let domain = engineHostName?.trimmingCharacters(in: .whitespacesAndNewlines),
-           !domain.isEmpty {
-            self.engineHost = .custom(domain)
+        if let host = engineHostName?.trimmingCharacters(in: .whitespacesAndNewlines),
+           !host.isEmpty {
+            self.engineHost = .custom(host)
         } else {
             self.engineHost = .engine
         }
