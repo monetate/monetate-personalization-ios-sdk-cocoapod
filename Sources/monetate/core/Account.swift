@@ -13,16 +13,23 @@ public struct Account:Codable {
     private var domain: String?
     private var name: String?
     private var shortname: String?
+    private var engineHost: MonetateHostDomain
     
     /**
      Contains standard domain name instance and shortname
      */
     
-    public init(instance: String, domain:String, name:String, shortname:String) {
+    public init(instance: String, domain:String, name:String, shortname:String, engineHostName:String? = nil) {
         self.instance = instance
         self.domain = domain
         self.name = name
         self.shortname = shortname
+        if let host = engineHostName?.trimmingCharacters(in: .whitespacesAndNewlines),
+           !host.isEmpty {
+            self.engineHost = .custom(host)
+        } else {
+            self.engineHost = .engine
+        }
         
         do {
             try checkAccountInfo()
@@ -72,6 +79,10 @@ public struct Account:Codable {
     
     func getDomain () -> String {
         return self.domain ?? ""
+    }
+    
+    func getEngineHost() -> MonetateHostDomain {
+        return self.engineHost
     }
 }
 
