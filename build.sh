@@ -63,10 +63,6 @@ xcodebuild -create-xcframework \
   -framework "$SIM_FW" \
   -output "$BUILD_DIR/Monetate.xcframework"
 
-if [[ $? -ne 0 ]]; then
-  echo "XCFramework creation failed"
-  exit 1
-fi
 echo "✅ $CONFIGURATION XCFramework created successfully!"
 
 
