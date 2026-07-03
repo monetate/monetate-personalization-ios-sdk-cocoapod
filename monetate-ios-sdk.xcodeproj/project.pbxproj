@@ -18,6 +18,7 @@
 		1D2D2A7A255165360041D0DD /* ScreenSizeTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D2D2A79255165360041D0DD /* ScreenSizeTest.swift */; };
 		1D2D2A7C2551704A0041D0DD /* TimerQueueTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D2D2A7B2551704A0041D0DD /* TimerQueueTests.swift */; };
 		1D6F8841256E8B1E00A5CE6A /* GetActionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D6F8840256E8B1E00A5CE6A /* GetActionTests.swift */; };
+		4ACE7B0129B60001004C9ECE /* ThreadingRaceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4ACE7B0029B60001004C9ECE /* ThreadingRaceTests.swift */; };
 		1DF4DB49256D8C790047E014 /* ReportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D2F4366256BC4930032FFB3 /* ReportTests.swift */; };
 		1F157C7E26B02FCC000D952B /* ScheduleTimer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F157C4B26B02FCC000D952B /* ScheduleTimer.swift */; };
 		1F157C7F26B02FCC000D952B /* Personalization.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F157C4C26B02FCC000D952B /* Personalization.swift */; };
@@ -100,6 +101,7 @@
 		1D2D2A77255165110041D0DD /* IpAddressTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IpAddressTest.swift; sourceTree = "<group>"; };
 		1D2D2A79255165360041D0DD /* ScreenSizeTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenSizeTest.swift; sourceTree = "<group>"; };
 		1D2D2A7B2551704A0041D0DD /* TimerQueueTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimerQueueTests.swift; sourceTree = "<group>"; };
+		4ACE7B0029B60001004C9ECE /* ThreadingRaceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThreadingRaceTests.swift; sourceTree = "<group>"; };
 		1D2F4366256BC4930032FFB3 /* ReportTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReportTests.swift; sourceTree = "<group>"; };
 		1D6F8840256E8B1E00A5CE6A /* GetActionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetActionTests.swift; sourceTree = "<group>"; };
 		1F157C4B26B02FCC000D952B /* ScheduleTimer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ScheduleTimer.swift; sourceTree = "<group>"; };
@@ -373,6 +375,7 @@
 				221195382134878A00B88E49 /* Actions */,
 				2211951D21309F0F00B88E49 /* Events */,
 				1D2D2A7B2551704A0041D0DD /* TimerQueueTests.swift */,
+				4ACE7B0029B60001004C9ECE /* ThreadingRaceTests.swift */,
 				1D2F4366256BC4930032FFB3 /* ReportTests.swift */,
 				1D6F8840256E8B1E00A5CE6A /* GetActionTests.swift */,
 				22E0FAD3210B68D3002E6B93 /* Info.plist */,
@@ -579,6 +582,7 @@
 				1D2D2A7A255165360041D0DD /* ScreenSizeTest.swift in Sources */,
 				1D2D2A6E255163470041D0DD /* CartEventTest.swift in Sources */,
 				1D2D2A7C2551704A0041D0DD /* TimerQueueTests.swift in Sources */,
+				4ACE7B0129B60001004C9ECE /* ThreadingRaceTests.swift in Sources */,
 				221195462137144600B88E49 /* TestHelpers.m in Sources */,
 				46746A872AD6D388001C6A8B /* CoordinatesTest.swift in Sources */,
 				1D2D2A76255164D10041D0DD /* UserAgentTest.swift in Sources */,
