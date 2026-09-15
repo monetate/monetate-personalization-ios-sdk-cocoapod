@@ -39,30 +39,40 @@ enum Method:String {
 /// Holds configuration constants for the Monetate API.
 struct APIConfig {
     static let scheme = "https"
-    
+    struct BasePath {
+        static let engine = "/api/engine"
+        static let search = "/api/search"
+    }
     struct Paths {
-        static let decide = "/api/engine/v1/decide/"
-        static let search = "/api/search/v1/site-search/"
+        static let decide = "/v1/decide/"
+        static let siteSearch = "/v1/site-search/"
     }
     
     enum Endpoint: String {
+        case decide
         case search
         case reportClick = "report-click"
         case urlRedirect = "url-redirects"
         
-        /// Builds path with given channel
-        func path(for channel: String) -> String {
+        /// Builds path with given account or channel
+        func path(for component: String) -> String {
             switch self {
+            case .decide:
+                return BasePath.engine + Paths.decide + component
             case .search, .reportClick:
-                return Paths.search + "\(channel)/\(self.rawValue)"
+                return BasePath.search
+                + Paths.siteSearch
+                + "\(component)/\(self.rawValue)"
             case .urlRedirect:
-                return Paths.search + "\(channel)/\(self.rawValue)"
+                return BasePath.search
+                + Paths.siteSearch
+                + "\(component)/\(self.rawValue)"
             }
         }
         
         func method() -> Method {
             switch self {
-            case .search, .reportClick:
+            case .search, .reportClick, .decide:
                 return .POST
             case .urlRedirect:
                 return .GET
@@ -84,7 +94,7 @@ class APIService {
         var components = URLComponents()
         components.scheme = APIConfig.scheme
         components.host = engineHost.value
-        components.path = APIConfig.Paths.decide + account
+        components.path = APIConfig.Endpoint.decide.path(for: account)
         
         return components.url?.absoluteString
     }

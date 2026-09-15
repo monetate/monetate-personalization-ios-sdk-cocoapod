@@ -330,10 +330,7 @@ public class Personalization {
             let jsonString = body.toString ?? "JSON String conversion failed. Fallback: \(String(describing: body))"
             Log.debug("Monetate Engine API body created - \(jsonString)")
         }
-        // Trace object
-        _ = requestTraceRegistry.createTrace(
-            requestId: requestId
-        )
+     
         self.timer?.suspend()
         service.getDecision(url: engineURL, body: body, headers: nil, success: {[weak self] (data, status, res) in
             self?.eventQueueManager.updateQueue([:])

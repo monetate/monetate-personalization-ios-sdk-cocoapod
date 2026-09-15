@@ -8,18 +8,28 @@
 
 import Foundation
 
-public final class RequestTraceRegistry {
+ final class RequestTraceRegistry {
 
     private var traces: [String: RequestTrace] = [:]
     private let lock = NSLock()
 
-    public init() {}
-
     @discardableResult
-    public func createTrace(requestId: String) -> RequestTrace {
+    func createTrace( requestId: String,
+                      status: TraceStatus = .created,
+                      createdAt: Date = Date(),
+                      endpoint: String,
+                      method: Method = .POST,
+                      environment: Environment = .production,
+                      requestType: RequestType = .recommendation) -> RequestTrace {
         let trace = RequestTrace(
             requestId: requestId,
-            traceId: "trace_\(requestId)"
+            traceId: "trace_\(requestId)",
+            status: status,
+            createdAt: createdAt,
+            endpoint: endpoint,
+            method: method,
+            environment: environment,
+            requestType: requestType
         )
 
         lock.lock()
@@ -29,14 +39,14 @@ public final class RequestTraceRegistry {
         return trace
     }
 
-    public func getTrace(requestId: String) -> RequestTrace? {
+    func getTrace(requestId: String) -> RequestTrace? {
         lock.lock()
         defer { lock.unlock() }
 
         return traces[requestId]
     }
 
-    public func updateTrace(_ trace: RequestTrace) {
+    func updateTrace(_ trace: RequestTrace) {
         lock.lock()
         defer { lock.unlock() }
 
@@ -47,7 +57,7 @@ public final class RequestTraceRegistry {
         traces[trace.requestId] = trace
     }
 
-    public func removeTrace(requestId: String) {
+    func removeTrace(requestId: String) {
         lock.lock()
         defer { lock.unlock() }
 
