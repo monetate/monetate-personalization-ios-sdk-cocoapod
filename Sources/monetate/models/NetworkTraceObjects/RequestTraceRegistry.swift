@@ -13,8 +13,6 @@ import Foundation
     private var traces: [String: RequestTrace] = [:]
     private let lock = NSLock()
 
-    public init() {}
-
     @discardableResult
     func createTrace( requestId: String,
                       status: TraceStatus = .created,
