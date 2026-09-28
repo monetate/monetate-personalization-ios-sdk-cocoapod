@@ -14,9 +14,9 @@ struct RequestTrace: Codable {
     var status: TraceStatus
     var createdAt: Date
 
-    var request: TraceRequest?
-    var response: TraceResponse?
-    var timing: TraceTiming?
-    var lifecycle: TraceLifecycle?
-    var error: TraceError?
+    var request: TraceRequest? = nil
+    var response: TraceResponse? = nil
+    var timing: TraceTiming? = nil
+    var lifecycle: TraceLifecycle? = nil
+    var error: TraceError? = nil
 }
