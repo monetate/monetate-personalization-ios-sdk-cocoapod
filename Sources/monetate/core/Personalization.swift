@@ -23,7 +23,7 @@ public class Personalization {
     private let sdkQueue = DispatchQueue(label: "sdk.Monetate.processing", qos: .userInitiated)
     private let requestBodyCreator = RequestBodyCreator()
     private var enableDebugMode: Bool
-    private let requestTraceRegistry = RequestTraceRegistry()
+    private lazy var traceManager = TraceManager()
     
     //constructor
     public init (account: Account, user: User, enableDebugMode: Bool = false) {
@@ -329,6 +329,10 @@ public class Personalization {
         if enableDebugMode {
             let jsonString = body.toString ?? "JSON String conversion failed. Fallback: \(String(describing: body))"
             Log.debug("Monetate Engine API body created - \(jsonString)")
+            
+            let trace = traceManager.createRequestTrace()
+            let traceJSON = traceManager.createJsonFromObject(trace)
+            Log.debug("Trace Request - \(traceJSON ?? "Trace creation failed")")
         }
      
         self.timer?.suspend()
