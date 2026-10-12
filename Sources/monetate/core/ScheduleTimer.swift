@@ -27,35 +27,43 @@ public class ScheduleTimer {
         case suspended
         case resumed
     }
+    private let timerQueue = DispatchQueue(label: "sdk.Monetate.timerQueue", qos: .userInitiated)
     private var state: State = .suspended
+    
     public func resume() {
-        if state == .resumed {
-            return
+        timerQueue.sync {
+            if state == .resumed {
+                return
+            }
+            state = .resumed
+            timer.schedule(deadline: .now() + self.timeInterval, repeating: self.timeInterval)
+            timer.resume()
+            let timestamp = Date().toString("E dd MM yyyy HH:mm:ss")
+            Log.debug("Timer resumed with duration \(self.timeInterval) seconds - \(timestamp)", shouldLogContext: false)
         }
-        state = .resumed
-        timer.schedule(deadline: .now() + self.timeInterval, repeating: self.timeInterval)
-        timer.resume()
-        let timestamp = Date().toString("E dd MM yyyy HH:mm:ss")
-        Log.debug("Timer resumed with duration \(self.timeInterval) seconds - \(timestamp)", shouldLogContext: false)
     }
     
     public func suspend() {
-        if state == .suspended {
-            return
+        timerQueue.sync {
+            if state == .suspended {
+                return
+            }
+            state = .suspended
+            timer.suspend()
+            let timestamp = Date().toString("E dd MM yyyy HH:mm:ss")
+            Log.debug("Timer suspended - \(timestamp)", shouldLogContext: false)
         }
-        state = .suspended
-        timer.suspend()
-        let timestamp = Date().toString("E dd MM yyyy HH:mm:ss")
-        Log.debug("Timer suspended - \(timestamp)", shouldLogContext: false)
     }
     
     deinit {
-        timer.setEventHandler {}
-    
-        if state == .suspended {
-            timer.resume()
+        timerQueue.sync {
+            timer.setEventHandler {}
+            
+            if state == .suspended {
+                timer.resume()
+            }
+            timer.cancel()
         }
-        timer.cancel()
     }
 }
 
