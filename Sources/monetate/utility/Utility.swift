@@ -32,8 +32,9 @@ class Utility {
             promise.succeed(value: queue)
             break
         case .ProductDetailView:
-            if let event = queue[.ProductDetailView] as? ProductDetailView, let prod1 = event.products ,let data = data as? ProductDetailView, let prod2 = data.products  {
-                event.products = ProductDetailView.merge(first: prod1, second: prod2)
+            if let event = queue[.ProductDetailView] as? ProductDetailView, let prod1 = event.products ,let data = data as? ProductDetailView, let prod2 = data.products,
+               let merged = ProductDetailView(products: ProductDetailView.merge(first: prod1, second: prod2)) {
+                queue[.ProductDetailView] = merged
             } else {
                 queue[.ProductDetailView] = data
             }
@@ -41,31 +42,34 @@ class Utility {
             break
         case .ProductThumbnailView:
             if let event = queue[.ProductThumbnailView] as? ProductThumbnailView, let data = data as? ProductThumbnailView {
-                event.products = event.products.union(data.products)
-            } else {
+                queue[.ProductThumbnailView] = ProductThumbnailView(products: event.products.union(data.products))
+            }else {
                 queue[.ProductThumbnailView] = data
             }
             promise.succeed(value: queue)
             break
         case .Cart:
-            if let key = queue[.Cart] as? Cart, let lines1 = key.cartLines, let data = data as? Cart, let lines2 = data.cartLines {
-                key.cartLines = Cart.merge(first: lines1, second: lines2)
-            } else {
+            if let key = queue[.Cart] as? Cart, let lines1 = key.cartLines, let data = data as? Cart, let lines2 = data.cartLines,
+               let merged = Cart(cartLines: Cart.merge(first: lines1, second: lines2)) {
+                queue[.Cart] = merged
+            }else {
                 queue[.Cart] = data
             }
             promise.succeed(value: queue)
             break
         case .AddToCart:
-            if let key = queue[.AddToCart] as? AddToCart, let lines1 = key.cartLines, let data = data as? AddToCart, let lines2 = data.cartLines {
-                key.cartLines = AddToCart.merge(first: lines1, second: lines2)
-            } else {
+            if let key = queue[.AddToCart] as? AddToCart, let lines1 = key.cartLines, let data = data as? AddToCart, let lines2 = data.cartLines,
+               let merged = AddToCart(cartLines: AddToCart.merge(first: lines1, second: lines2)) {
+                queue[.AddToCart] = merged
+            }  else {
                 queue[.AddToCart] = data
             }
             promise.succeed(value: queue)
             break
         case .Purchase:
-            if let event = queue[.Purchase] as? Purchase, let lines1 = event.purchaseLines, let data = data as? Purchase, let lines2 = data.purchaseLines  {
-                event.purchaseLines = Purchase.merge(first: lines1, second: lines2)
+            if let event = queue[.Purchase] as? Purchase, let lines1 = event.purchaseLines, let data = data as? Purchase, let lines2 = data.purchaseLines,
+               let merged = Purchase(purchaseId: event.purchaseId, purchaseLines: Purchase.merge(first: lines1, second: lines2)) {
+                queue[.Purchase] = merged
             } else {
                 queue[.Purchase] = data
             }
@@ -73,15 +77,16 @@ class Utility {
             break
         case .Metadata:
             if let event = queue[.Metadata] as? Metadata, let data = data as? Metadata {
-                event.metadata = Metadata.merge(first: event.metadata, second: data.metadata)
+                queue[.Metadata] = Metadata(metadata: Metadata.merge(first: event.metadata, second: data.metadata))
             } else {
                 queue[.Metadata] = data
             }
             promise.succeed(value: queue)
             break
         case .CustomVariables:
-            if let event = queue[.CustomVariables] as? CustomVariables, let data = data as? CustomVariables {
-                event.customVariables = CustomVariables.merge(first: event.customVariables, second: data.customVariables)
+            if let event = queue[.CustomVariables] as? CustomVariables, let data = data as? CustomVariables,
+               let merged = CustomVariables(customVariables: CustomVariables.merge(first: event.customVariables, second: data.customVariables)) {
+                queue[.CustomVariables] = merged
             } else {
                 queue[.CustomVariables] = data
             }
