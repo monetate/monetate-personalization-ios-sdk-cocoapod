@@ -72,6 +72,19 @@ public class Personalization {
             self.eventQueueManager.setEvent(event, for: context)
         }
     }
+        
+    private func removeDispatchedEvents(_ dispatched: [ContextEnum: MEvent]) {
+        eventQueueUpdateQueue.sync {
+            var remaining = self.eventQueueManager.getQueueSnapshot()
+            for (context, sentEvent) in dispatched {
+                guard let currentEvent = remaining[context] else { continue }
+                if Utility.isSameEvent(currentEvent, sentEvent, for: context) {
+                    remaining.removeValue(forKey: context)
+                }
+            }
+            self.eventQueueManager.updateQueue(remaining)
+        }
+    }
     
     func isContextSwitched (ctx:ContextEnum, event: MEvent) -> Bool {
         if ((ctx == .UserAgent || ctx == .IpAddress || ctx == .Coordinates ||
@@ -272,13 +285,6 @@ public class Personalization {
      */
     private func addEvent(context:ContextEnum, event: MEvent?) {
         guard let event = event else { return }
-
-        // Q1ClaudeUpdate_Issue3_LostUpdates: was getQueueSnapshot() -> processEvent(...) ->
-        // updateQueue(whole dict), with the write-back riding a Future callback that defaults to
-        // DispatchQueue.main. addEventData(context:) calls this up to 13 times in a row and
-        // getActions then builds the request body immediately, so on a background caller these
-        // 13 writes both raced each other AND could land after the request was already built.
-        // One atomic merge per call fixes both.
         mergeIntoEventQueue(context, event)
     }
     
@@ -339,7 +345,8 @@ public class Personalization {
     func callMonetateAPI (data: Data? = nil, requestId: String?=nil) -> Future<APIResponse,Error> {
         let promise = Promise<APIResponse,Error>()
         let requestId = requestId ?? generateRequestId()
-        let body:[String:Any] = buildDecisionRequestBody()
+        let dispatchedEvents = self.eventQueueUpdateQueue.sync { self.eventQueueManager.getQueueSnapshot() }
+        let body:[String:Any] = buildDecisionRequestBody(dispatchedEvents: dispatchedEvents)
         let engineURL = service.getDecisionURL(account: account.getShortName()) ?? "Invalid URL"
         Log.debug("Monetate Engine API URL - \(engineURL)")
         
@@ -354,7 +361,7 @@ public class Personalization {
      
         self.timer?.suspend()
         service.getDecision(url: engineURL, body: body, headers: nil, success: {[weak self] (data, status, res) in
-            self?.eventQueueManager.updateQueue([:])
+            self?.removeDispatchedEvents(dispatchedEvents)
             Log.debug("callMonetateAPI - Success - \(data.toString)")
             
             promise.succeed(value: APIResponse(success: true, res: res, status: status, data: data, requestId:requestId))
@@ -630,11 +637,11 @@ extension Personalization {
 
 //MARK: - Monetate API Handlers
 extension Personalization {
-    private func buildDecisionRequestBody() -> [String: Any] {
+    private func buildDecisionRequestBody(dispatchedEvents: [ContextEnum: MEvent]) -> [String: Any] {
         var body: [String: Any] = [
             "channel": account.getChannel(),
             "sdkVersion": account.getSDKVersion(),
-            "events": Utility.createEventBody(queue: eventQueueManager.getQueueSnapshot())
+            "events": Utility.createEventBody(queue: dispatchedEvents)
         ]
 
         if let val = user.deviceId {
