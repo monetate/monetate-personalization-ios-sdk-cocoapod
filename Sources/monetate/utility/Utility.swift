@@ -103,6 +103,14 @@ class Utility {
         return processEvent(context: context, data: data, mqueue: mqueue).value ?? mqueue
     }
     
+    static func isSameEvent(_ lhs: MEvent, _ rhs: MEvent, for context: ContextEnum) -> Bool {
+        guard let lhsJSON = createEventBody(queue: [context: lhs]).first,
+              let rhsJSON = createEventBody(queue: [context: rhs]).first else {
+            return false
+        }
+        return NSDictionary(dictionary: lhsJSON).isEqual(to: rhsJSON)
+    }
+    
     static func createEventBody(queue: [ContextEnum: MEvent]) -> [[String: Any]] {
         var json: [[String: Any]] = []
         
