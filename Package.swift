@@ -16,8 +16,7 @@ let package = Package(
         .target(
             name: "Monetate",
             dependencies: [],
-            path: "Sources/monetate",
-            resources: [.process("Resources/Version.plist")]
+            path: "Sources/monetate"
         ),
         .testTarget(
                 name: "MonetateTests",
