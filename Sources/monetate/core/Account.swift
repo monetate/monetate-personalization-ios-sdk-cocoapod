@@ -14,6 +14,7 @@ public struct Account:Codable {
     private var name: String?
     private var shortname: String?
     private var engineHost: MonetateHostDomain
+    private var staticSdkVersion = "2026.04.28"
     
     /**
      Contains standard domain name instance and shortname
@@ -54,8 +55,10 @@ public struct Account:Codable {
     }
 
 
-    
-    private static let cachedSDKVersion: String = {
+   // DEPRECATED: Dynamic version logging
+   // Reason: Static constant approach is cleaner, no resource file dependencies
+    /*
+    private var dynamicSDKVersion = {
         #if SWIFT_PACKAGE
         guard let url = Bundle.module.url(forResource: "Version", withExtension: "plist"),
               let dict = NSDictionary(contentsOf: url),
@@ -68,9 +71,10 @@ public struct Account:Codable {
             .infoDictionary?["CFBundleShortVersionString"] as? String ?? "Unknown"
         #endif
     }()
+     */
 
     func getSDKVersion() -> String {
-        return Account.cachedSDKVersion
+        return staticSdkVersion
     }
     
     func getChannel () -> String {
